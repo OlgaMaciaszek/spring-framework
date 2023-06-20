@@ -16,16 +16,23 @@
 
 package org.springframework.web.service.invoker;
 
+import java.util.Objects;
+import java.util.function.Function;
+
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ReactiveAdapter;
 import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * {@link HttpServiceArgumentResolver} for {@link RequestPart @RequestPart}
@@ -70,12 +77,39 @@ public class RequestPartArgumentResolver extends AbstractNamedValueArgumentResol
 		ReactiveAdapter adapter = this.reactiveAdapterRegistry.getAdapter(type);
 		if (adapter != null) {
 			Assert.isTrue(!adapter.isNoValue(), "Expected publisher that produces a value");
-			Publisher<?> publisher = adapter.toPublisher(value);
-			requestValues.addRequestPart(name, publisher, ResolvableType.forMethodParameter(parameter.nested()));
+			Publisher<?> publisher = toAdjustedPublisher(adapter, value);
+			requestValues.addRequestPart(name, publisher, getAdjustedType(parameter));
 		}
 		else {
 			requestValues.addRequestPart(name, value);
 		}
+	}
+
+	private ResolvableType getAdjustedType(MethodParameter parameter) {
+		ResolvableType resolvableType = ResolvableType.forMethodParameter(parameter.nested());
+		if (MultipartFile.class.isAssignableFrom(Objects.requireNonNull(resolvableType.getRawClass(),
+				"Expected resolvable type"))) {
+			return ResolvableType.forClass(Resource.class);
+		}
+		return resolvableType;
+	}
+
+	private Publisher<?> toAdjustedPublisher(ReactiveAdapter adapter, Object value) {
+		if (adapter.isMultiValue()) {
+			return Flux.from(adapter.toPublisher(value)).map(multipartFilesToResources());
+		}
+		else {
+			return Mono.from(adapter.toPublisher(value)).map(multipartFilesToResources());
+		}
+	}
+
+	private static Function<Object, Object> multipartFilesToResources() {
+		return part -> {
+			if (part instanceof MultipartFile file) {
+				return file.getResource();
+			}
+			return part;
+		};
 	}
 
 }
