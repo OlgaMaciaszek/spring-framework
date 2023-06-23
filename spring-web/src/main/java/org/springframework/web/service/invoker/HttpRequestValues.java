@@ -27,8 +27,6 @@ import org.reactivestreams.Publisher;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.ResolvableType;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -236,8 +234,6 @@ public final class HttpRequestValues {
 		@Nullable
 		private ParameterizedTypeReference<?> bodyElementType;
 
-		private final MultiValueMap<String, HttpEntity<?>> multipartFileEntities = new LinkedMultiValueMap<>();
-
 		/**
 		 * Set the HTTP method for the request.
 		 */
@@ -383,13 +379,6 @@ public final class HttpRequestValues {
 			this.bodyValue = null;
 		}
 
-		public void addMultipartFile(String name, HttpEntity<Resource> multipartFileEntity) {
-			Assert.hasLength(name, "'name' must not be empty");
-			Assert.notNull(multipartFileEntity, "'multipartFileEntity' must not be null");
-
-			this.multipartFileEntities.add(name, multipartFileEntity);
-		}
-
 		/**
 		 * Build the {@link HttpRequestValues} instance.
 		 */
@@ -400,24 +389,14 @@ public final class HttpRequestValues {
 			Map<String, String> uriVars = (this.uriVars != null ? new HashMap<>(this.uriVars) : Collections.emptyMap());
 
 			Object bodyValue = this.bodyValue;
-			MultiValueMap<String, HttpEntity<?>> requestPartEntities = new LinkedMultiValueMap<>();
 			if (this.multipartBuilder != null) {
 				Assert.isTrue(bodyValue == null && this.body == null, "Expected body or request parts, not both");
-				requestPartEntities = this.multipartBuilder.build();
-			}
-
-			if (!this.multipartFileEntities.isEmpty()) {
-				Assert.isTrue(bodyValue == null && this.body == null, "Expected body or request parts, not both");
-				requestPartEntities.addAll(this.multipartFileEntities);
-			}
-			if (!requestPartEntities.isEmpty()) {
-				bodyValue = requestPartEntities;
+				bodyValue = this.multipartBuilder.build();
 			}
 
 			if (!CollectionUtils.isEmpty(this.requestParams)) {
 				if (hasContentType(MediaType.APPLICATION_FORM_URLENCODED)) {
 					Assert.isTrue(this.multipartBuilder == null, "Cannot add parts to form data request");
-					Assert.isTrue(this.multipartFileEntities.isEmpty(), "Cannot add parts to form data request");
 					Assert.isTrue(bodyValue == null && this.body == null, "Cannot set body of form data request");
 					bodyValue = new LinkedMultiValueMap<>(this.requestParams);
 				}

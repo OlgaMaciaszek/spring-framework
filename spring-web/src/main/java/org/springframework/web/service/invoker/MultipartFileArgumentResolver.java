@@ -22,13 +22,15 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * {@link HttpServiceArgumentResolver} for {@link MultipartFile} arguments.
+ * {@link HttpServiceArgumentResolver} for arguments of type {@link MultipartFile}.
+ * The arguments should not be annotated. To allow for non-required arguments,
+ * the parameters can also be of type {@link java.util.Optional<MultipartFile>>}.
  *
  * @author Olga Maciaszek-Sharma
+ * @since 6.1
  */
 public class MultipartFileArgumentResolver extends AbstractNamedValueArgumentResolver {
 
@@ -36,14 +38,8 @@ public class MultipartFileArgumentResolver extends AbstractNamedValueArgumentRes
 
 	@Override
 	protected NamedValueInfo createNamedValueInfo(MethodParameter parameter) {
-		if (!parameter.getParameterType().equals(MultipartFile.class)) {
+		if (!parameter.nestedIfOptional().getNestedParameterType().equals(MultipartFile.class)) {
 			return null;
-		}
-		// Assuming the annotation might be there even if not required
-		RequestPart annotation = parameter.getParameterAnnotation(RequestPart.class);
-		if (annotation != null) {
-			return new NamedValueInfo(annotation.name(), annotation.required(),
-					null, MULTIPART_FILE_LABEL, true);
 		}
 		String parameterName = parameter.getParameterName();
 		return new NamedValueInfo(parameterName != null ? parameterName : "", true,
@@ -53,14 +49,14 @@ public class MultipartFileArgumentResolver extends AbstractNamedValueArgumentRes
 
 	@Override
 	protected void addRequestValue(String name, Object value, MethodParameter parameter,
-			HttpRequestValues.Builder requestValues) {
+								   HttpRequestValues.Builder requestValues) {
 		Assert.isInstanceOf(MultipartFile.class, value,
 				"The value has to be of type 'MultipartFile'");
 		Assert.isInstanceOf(MultipartFile.class, value,
 				"The value has to be of type 'MultipartFile'");
 
 		MultipartFile file = (MultipartFile) value;
-		requestValues.addMultipartFile(name, toHttpEntity(name, file));
+		requestValues.addRequestPart(name, toHttpEntity(name, file));
 	}
 
 	private HttpEntity<Resource> toHttpEntity(String name, MultipartFile file) {

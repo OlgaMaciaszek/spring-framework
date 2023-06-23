@@ -26,7 +26,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * {@link HttpServiceArgumentResolver} for {@link RequestPart @RequestPart}
@@ -59,8 +58,7 @@ public class RequestPartArgumentResolver extends AbstractNamedValueArgumentResol
 	@Override
 	protected NamedValueInfo createNamedValueInfo(MethodParameter parameter) {
 		RequestPart annot = parameter.getParameterAnnotation(RequestPart.class);
-		// Multipart files should be processed by a different argument resolver
-		return ((annot == null || parameter.getParameterType().equals(MultipartFile.class)) ? null :
+		return (annot == null ? null :
 				new NamedValueInfo(annot.name(), annot.required(), null, "request part", true));
 	}
 
