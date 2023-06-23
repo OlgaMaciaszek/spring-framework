@@ -16,6 +16,8 @@
 
 package org.springframework.web.service.invoker;
 
+import java.util.Optional;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -27,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * {@link HttpServiceArgumentResolver} for arguments of type {@link MultipartFile}.
  * The arguments should not be annotated. To allow for non-required arguments,
- * the parameters can also be of type {@link java.util.Optional<MultipartFile>>}.
+ * the {@link MultipartFile} parameters can also be wrapped with {@link Optional}.
  *
  * @author Olga Maciaszek-Sharma
  * @since 6.1
@@ -49,7 +51,7 @@ public class MultipartFileArgumentResolver extends AbstractNamedValueArgumentRes
 
 	@Override
 	protected void addRequestValue(String name, Object value, MethodParameter parameter,
-								   HttpRequestValues.Builder requestValues) {
+			HttpRequestValues.Builder requestValues) {
 		Assert.isInstanceOf(MultipartFile.class, value,
 				"The value has to be of type 'MultipartFile'");
 		Assert.isInstanceOf(MultipartFile.class, value,
