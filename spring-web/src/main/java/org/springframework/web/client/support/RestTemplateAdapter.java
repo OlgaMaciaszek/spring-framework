@@ -1,3 +1,19 @@
+/*
+ * Copyright 2002-2023 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.web.client.support;
 
 import java.net.URI;
@@ -34,24 +50,25 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 	}
 
 	@Override
-	public void exchange(HttpRequestValues requestValues) {
-		restTemplate.exchange(newRequest(requestValues), Void.class);
+	public Void exchange(HttpRequestValues requestValues) {
+		this.restTemplate.exchange(newRequest(requestValues), Void.class);
+		return null;
 	}
 
 	@Override
 	public HttpHeaders exchangeForHeaders(HttpRequestValues requestValues) {
 		// TODO: test and handle return type
-		return restTemplate.exchange(newRequest(requestValues), Void.class).getHeaders();
+		return this.restTemplate.exchange(newRequest(requestValues), Void.class).getHeaders();
 	}
 
 	@Override
 	public <T> T exchangeForBody(HttpRequestValues requestValues, ParameterizedTypeReference<T> bodyType) {
-		return restTemplate.exchange(newRequest(requestValues), bodyType).getBody();
+		return this.restTemplate.exchange(newRequest(requestValues), bodyType).getBody();
 	}
 
 	@Override
 	public ResponseEntity<Void> exchangeForBodilessEntity(HttpRequestValues requestValues) {
-		return restTemplate.exchange(newRequest(requestValues), Void.class);
+		return this.restTemplate.exchange(newRequest(requestValues), Void.class);
 	}
 
 	@Override
@@ -67,7 +84,7 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 		}
 		else if (requestValues.getUriTemplate() != null) {
 			uri = UriComponentsBuilder.fromUriString(requestValues.getUriTemplate())
-				.build(requestValues.getUriVariables());
+					.build(requestValues.getUriVariables());
 		}
 		else {
 			throw new IllegalStateException("Neither full URL nor URI template");
@@ -77,10 +94,10 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 		Assert.notNull(httpMethod, "HttpMethod is required");
 
 		RequestEntity.BodyBuilder builder = RequestEntity.method(httpMethod, uri)
-			.headers(requestValues.getHeaders())
-			// TODO: handle attributes
-			// TODO: test and fix
-			.headers(new HttpHeaders(requestValues.getCookies()));
+				.headers(requestValues.getHeaders())
+				// TODO: handle attributes
+				// TODO: test and fix
+				.headers(new HttpHeaders(requestValues.getCookies()));
 
 		if (requestValues.getBodyValue() != null) {
 			return builder.body(requestValues.getBodyValue());

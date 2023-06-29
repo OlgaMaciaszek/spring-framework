@@ -288,11 +288,38 @@ final class HttpServiceMethod {
 
 		@Override
 		public Object execute(HttpRequestValues requestValues) {
-			return null;
+			return this.responseFunction.apply(requestValues);
 		}
 
 		public static ResponseFunction create(HttpExchangeAdapter client, Method method) {
-			return new ExchangeResponseFunction(httpRequestValues -> null);
+			// TODO: test for nesting levels
+			MethodParameter actualReturnParam = new MethodParameter(method, -1).nestedIfOptional();
+			Class<?> actualReturnType = actualReturnParam.getNestedParameterType();
+			MethodParameter bodyParam = actualReturnParam.nested();
+			Class<?> bodyType = bodyParam.getNestedParameterType();
+			ParameterizedTypeReference<?> bodyTypeReference =
+					ParameterizedTypeReference.forType(bodyParam.nested().getNestedGenericParameterType());
+
+			Function<HttpRequestValues, Object> responseFunction;
+			if (actualReturnType.equals(void.class) || actualReturnType.equals(Void.class)) {
+				responseFunction = client::exchange;
+			}
+			else if (actualReturnType.equals(HttpHeaders.class)) {
+				responseFunction = client::exchangeForHeaders;
+			}
+			else if (actualReturnType.equals(ResponseEntity.class)) {
+				if (bodyType.equals(Void.class)) {
+					responseFunction = client::exchangeForBodilessEntity;
+				}
+				else {
+					responseFunction = request -> client.exchangeForEntity(request, bodyTypeReference);
+				}
+			}
+			else {
+				responseFunction = request -> client.exchangeForBody(request, bodyTypeReference);
+			}
+
+			return new ExchangeResponseFunction(responseFunction);
 		}
 	}
 
