@@ -292,13 +292,10 @@ final class HttpServiceMethod {
 		}
 
 		public static ResponseFunction create(HttpExchangeAdapter client, Method method) {
-			// TODO: test for nesting levels
+			// TODO: fix Optional handling
 			MethodParameter actualReturnParam = new MethodParameter(method, -1).nestedIfOptional();
 			Class<?> actualReturnType = actualReturnParam.getNestedParameterType();
-			MethodParameter bodyParam = actualReturnParam.nested();
-			Class<?> bodyType = bodyParam.getNestedParameterType();
-			ParameterizedTypeReference<?> bodyTypeReference =
-					ParameterizedTypeReference.forType(bodyParam.nested().getNestedGenericParameterType());
+
 
 			Function<HttpRequestValues, Object> responseFunction;
 			if (actualReturnType.equals(void.class) || actualReturnType.equals(Void.class)) {
@@ -308,14 +305,20 @@ final class HttpServiceMethod {
 				responseFunction = client::exchangeForHeaders;
 			}
 			else if (actualReturnType.equals(ResponseEntity.class)) {
+				MethodParameter bodyParam = actualReturnParam.nested();
+				Class<?> bodyType = bodyParam.getNestedParameterType();
 				if (bodyType.equals(Void.class)) {
 					responseFunction = client::exchangeForBodilessEntity;
 				}
 				else {
+					ParameterizedTypeReference<?> bodyTypeReference =
+						ParameterizedTypeReference.forType(bodyParam.nested().getNestedGenericParameterType());
 					responseFunction = request -> client.exchangeForEntity(request, bodyTypeReference);
 				}
 			}
 			else {
+				ParameterizedTypeReference<?> bodyTypeReference =
+						ParameterizedTypeReference.forType(actualReturnParam.getNestedGenericParameterType());
 				responseFunction = request -> client.exchangeForBody(request, bodyTypeReference);
 			}
 
