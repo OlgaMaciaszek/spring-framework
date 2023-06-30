@@ -28,7 +28,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.service.invoker.HttpExchangeAdapter;
 import org.springframework.web.service.invoker.HttpRequestValues;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * An {@link HttpExchangeAdapter} that enables an {@link HttpServiceProxyFactory} to use
@@ -74,7 +73,7 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 	@Override
 	public <T> ResponseEntity<T> exchangeForEntity(HttpRequestValues requestValues,
 			ParameterizedTypeReference<T> bodyType) {
-		throw new UnsupportedOperationException("Please, implement me.");
+		return this.restTemplate.exchange(newRequest(requestValues), bodyType);
 	}
 
 	private RequestEntity<?> newRequest(HttpRequestValues requestValues) {
@@ -83,8 +82,8 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 			uri = requestValues.getUri();
 		}
 		else if (requestValues.getUriTemplate() != null) {
-			uri = UriComponentsBuilder.fromUriString(requestValues.getUriTemplate())
-					.build(requestValues.getUriVariables());
+			uri = restTemplate.getUriTemplateHandler().expand(requestValues.getUriTemplate(),
+					requestValues.getUriVariables());
 		}
 		else {
 			throw new IllegalStateException("Neither full URL nor URI template");
