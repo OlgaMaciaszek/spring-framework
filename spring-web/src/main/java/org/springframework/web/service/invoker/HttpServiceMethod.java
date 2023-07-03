@@ -292,37 +292,45 @@ final class HttpServiceMethod {
 		}
 
 		public static ResponseFunction create(HttpExchangeAdapter client, Method method) {
-			// TODO: fix Optional handling
 			MethodParameter actualReturnParam = new MethodParameter(method, -1).nestedIfOptional();
+			boolean returnOptional = actualReturnParam.getParameterType().equals(Optional.class);
 			Class<?> actualReturnType = actualReturnParam.getNestedParameterType();
-
 
 			Function<HttpRequestValues, Object> responseFunction;
 			if (actualReturnType.equals(void.class) || actualReturnType.equals(Void.class)) {
 				responseFunction = client::exchange;
 			}
 			else if (actualReturnType.equals(HttpHeaders.class)) {
-				responseFunction = client::exchangeForHeaders;
+				responseFunction = request ->
+						processResponse(client.exchangeForHeaders(request), returnOptional);
 			}
 			else if (actualReturnType.equals(ResponseEntity.class)) {
 				MethodParameter bodyParam = actualReturnParam.nested();
 				Class<?> bodyType = bodyParam.getNestedParameterType();
 				if (bodyType.equals(Void.class)) {
-					responseFunction = client::exchangeForBodilessEntity;
+					responseFunction = request ->
+							processResponse(client.exchangeForBodilessEntity(request), returnOptional);
 				}
 				else {
 					ParameterizedTypeReference<?> bodyTypeReference =
-						ParameterizedTypeReference.forType(bodyParam.nested().getNestedGenericParameterType());
-					responseFunction = request -> client.exchangeForEntity(request, bodyTypeReference);
+							ParameterizedTypeReference.forType(bodyParam.nested()
+									.getNestedGenericParameterType());
+					responseFunction = request -> processResponse(
+							client.exchangeForEntity(request, bodyTypeReference), returnOptional);
 				}
 			}
 			else {
 				ParameterizedTypeReference<?> bodyTypeReference =
 						ParameterizedTypeReference.forType(actualReturnParam.getNestedGenericParameterType());
-				responseFunction = request -> client.exchangeForBody(request, bodyTypeReference);
+				responseFunction = request ->
+						processResponse(client.exchangeForBody(request, bodyTypeReference), 						returnOptional);
 			}
 
 			return new ExchangeResponseFunction(responseFunction);
+		}
+
+		private static @Nullable Object processResponse(@Nullable Object response, boolean returnOptional) {
+			return returnOptional ? Optional.ofNullable(response) : response;
 		}
 	}
 
