@@ -17,13 +17,18 @@
 package org.springframework.web.client.support;
 
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.service.invoker.HttpExchangeAdapter;
 import org.springframework.web.service.invoker.HttpRequestValues;
@@ -97,10 +102,21 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 		Assert.notNull(httpMethod, "HttpMethod is required");
 
 		RequestEntity.BodyBuilder builder = RequestEntity.method(httpMethod, uri)
-				.headers(requestValues.getHeaders())
-				// TODO: handle attributes
-				// TODO: test and fix
-				.headers(new HttpHeaders(requestValues.getCookies()));
+				.headers(requestValues.getHeaders());
+
+		if (!requestValues.getCookies().isEmpty()) {
+			MultiValueMap<String, HttpCookie> cookies = new LinkedMultiValueMap<>();
+			requestValues.getCookies()
+				.forEach((name, values) -> values.forEach(value ->
+						cookies.add(name, new HttpCookie(name, value))));
+
+			builder.header(HttpHeaders.COOKIE,
+					cookies.values()
+						.stream()
+						.flatMap(List::stream)
+						.map(HttpCookie::toString)
+						.collect(Collectors.joining(";")));
+		}
 
 		if (requestValues.getBodyValue() != null) {
 			return builder.body(requestValues.getBodyValue());

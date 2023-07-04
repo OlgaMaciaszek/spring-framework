@@ -138,6 +138,11 @@ public interface HttpClientAdapter {
 
 				return delegate.requestToEntityFlux(requestValues, bodyType);
 			}
+
+			@Override
+			public boolean supportsRequestAttributes() {
+				return true;
+			}
 		};
 	}
 
