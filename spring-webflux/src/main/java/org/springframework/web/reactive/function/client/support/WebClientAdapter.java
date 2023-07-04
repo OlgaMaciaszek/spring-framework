@@ -132,4 +132,8 @@ public final class WebClientAdapter extends AbstractReactorHttpExchangeAdapter {
 		return new WebClientAdapter(webClient);
 	}
 
+	@Override
+	public boolean supportsRequestAttributes() {
+		return true;
+	}
 }

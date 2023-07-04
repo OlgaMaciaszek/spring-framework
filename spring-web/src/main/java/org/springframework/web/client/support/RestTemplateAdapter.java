@@ -56,7 +56,6 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 
 	@Override
 	public HttpHeaders exchangeForHeaders(HttpRequestValues requestValues) {
-		// TODO: test and handle return type
 		return this.restTemplate.exchange(newRequest(requestValues), Void.class).getHeaders();
 	}
 
@@ -74,6 +73,11 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 	public <T> ResponseEntity<T> exchangeForEntity(HttpRequestValues requestValues,
 			ParameterizedTypeReference<T> bodyType) {
 		return this.restTemplate.exchange(newRequest(requestValues), bodyType);
+	}
+
+	@Override
+	public boolean supportsRequestAttributes() {
+		return false;
 	}
 
 	private RequestEntity<?> newRequest(HttpRequestValues requestValues) {

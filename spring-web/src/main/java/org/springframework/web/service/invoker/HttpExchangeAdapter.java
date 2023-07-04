@@ -66,4 +66,9 @@ public interface HttpExchangeAdapter {
 	 */
 	<T> ResponseEntity<T> exchangeForEntity(HttpRequestValues requestValues, ParameterizedTypeReference<T> bodyType);
 
+	/**
+	 * A flag that indicates whether request attributes are supported by a specific client
+	 * adapter.
+	 */
+	boolean supportsRequestAttributes();
 }

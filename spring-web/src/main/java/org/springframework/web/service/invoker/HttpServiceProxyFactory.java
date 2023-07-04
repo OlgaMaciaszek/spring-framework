@@ -249,6 +249,7 @@ public final class HttpServiceProxyFactory {
 					this.exchangeAdapter, initArgumentResolvers(), this.embeddedValueResolver);
 		}
 
+		@SuppressWarnings("DataFlowIssue")
 		private List<HttpServiceArgumentResolver> initArgumentResolvers() {
 
 			// Custom
@@ -261,7 +262,9 @@ public final class HttpServiceProxyFactory {
 			resolvers.add(new RequestHeaderArgumentResolver(service));
 			resolvers.add(new RequestBodyArgumentResolver());
 			resolvers.add(new PathVariableArgumentResolver(service));
-			resolvers.add(new RequestParamArgumentResolver(service));
+			if (this.exchangeAdapter.supportsRequestAttributes()) {
+				resolvers.add(new RequestParamArgumentResolver(service));
+			}
 			resolvers.add(new RequestPartArgumentResolver());
 			resolvers.add(new CookieValueArgumentResolver(service));
 			resolvers.add(new RequestAttributeArgumentResolver());
