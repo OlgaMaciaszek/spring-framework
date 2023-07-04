@@ -44,7 +44,7 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.validation.beanvalidation.MethodValidator;
+import org.springframework.validation.method.MethodValidator;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.reactive.BindingContext;
 import org.springframework.web.reactive.HandlerResult;
@@ -159,7 +159,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 		return getMethodArgumentValues(exchange, bindingContext, providedArgs).flatMap(args -> {
 			Class<?>[] groups = getValidationGroups();
 			if (shouldValidateArguments() && this.methodValidator != null) {
-				this.methodValidator.validateArguments(
+				this.methodValidator.applyArgumentValidation(
 						getBean(), getBridgedMethod(), getMethodParameters(), args, groups);
 			}
 			Object value;
