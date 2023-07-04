@@ -115,7 +115,7 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 						.stream()
 						.flatMap(List::stream)
 						.map(HttpCookie::toString)
-						.collect(Collectors.joining(";")));
+						.collect(Collectors.joining("; ")));
 		}
 
 		if (requestValues.getBodyValue() != null) {
