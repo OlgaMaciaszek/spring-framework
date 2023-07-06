@@ -33,15 +33,13 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.validation.beanvalidation.MethodValidationException;
-import org.springframework.validation.beanvalidation.ParameterValidationResult;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -51,6 +49,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.testfixture.method.ResolvableMethod;
 import org.springframework.web.testfixture.servlet.MockHttpServletRequest;
@@ -163,14 +162,13 @@ public class MethodValidationTests {
 		this.request.addParameter("name", "name=Faustino1234");
 		this.request.addHeader("myHeader", "123");
 
-		MethodValidationException ex = catchThrowableOfType(
+		HandlerMethodValidationException ex = catchThrowableOfType(
 				() -> this.handlerAdapter.handle(this.request, this.response, hm),
-				MethodValidationException.class);
+				HandlerMethodValidationException.class);
 
 		assertThat(this.jakartaValidator.getValidationCount()).isEqualTo(1);
 		assertThat(this.jakartaValidator.getMethodValidationCount()).isEqualTo(1);
 
-		assertThat(ex.getConstraintViolations()).hasSize(2);
 		assertThat(ex.getAllValidationResults()).hasSize(2);
 
 		assertBeanResult(ex.getBeanResults().get(0), "student", Collections.singletonList(
@@ -260,7 +258,6 @@ public class MethodValidationTests {
 
 	@SuppressWarnings("unchecked")
 	private static <T> HandlerMethod handlerMethod(T controller, Consumer<T> mockCallConsumer) {
-		Assert.isTrue(!(controller instanceof Class<?>), "Expected controller instance");
 		Method method = ResolvableMethod.on((Class<T>) controller.getClass()).mockCall(mockCallConsumer).method();
 		return new HandlerMethod(controller, method);
 	}

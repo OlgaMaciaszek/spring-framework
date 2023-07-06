@@ -26,7 +26,6 @@ import kotlin.reflect.KFunction;
 import kotlin.reflect.KParameter;
 import kotlin.reflect.jvm.KCallablesJvm;
 import kotlin.reflect.jvm.ReflectJvmMapping;
-import org.reactivestreams.Publisher;
 
 import org.springframework.context.MessageSource;
 import org.springframework.core.CoroutinesUtils;
@@ -37,7 +36,7 @@ import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.validation.beanvalidation.MethodValidator;
+import org.springframework.validation.method.MethodValidator;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -175,14 +174,14 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 		Class<?>[] groups = getValidationGroups();
 		if (shouldValidateArguments() && this.methodValidator != null) {
-			this.methodValidator.validateArguments(
+			this.methodValidator.applyArgumentValidation(
 					getBean(), getBridgedMethod(), getMethodParameters(), args, groups);
 		}
 
 		Object returnValue = doInvoke(args);
 
 		if (shouldValidateReturnValue() && this.methodValidator != null) {
-			this.methodValidator.validateReturnValue(
+			this.methodValidator.applyReturnValueValidation(
 					getBean(), getBridgedMethod(), getReturnType(), returnValue, groups);
 		}
 
@@ -287,7 +286,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	 * instead.
 	 * @since 6.0
 	 */
-	protected Publisher<?> invokeSuspendingFunction(Method method, Object target, Object[] args) {
+	protected Object invokeSuspendingFunction(Method method, Object target, Object[] args) {
 		return CoroutinesUtils.invokeSuspendingFunction(method, target, args);
 	}
 

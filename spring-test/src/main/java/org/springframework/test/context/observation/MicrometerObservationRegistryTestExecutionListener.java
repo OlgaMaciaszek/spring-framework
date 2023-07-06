@@ -26,9 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Conventions;
 import org.springframework.test.context.TestContext;
-import org.springframework.test.context.TestExecutionListener;
 import org.springframework.test.context.support.AbstractTestExecutionListener;
-import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -47,9 +45,6 @@ class MicrometerObservationRegistryTestExecutionListener extends AbstractTestExe
 
 	private static final Log logger = LogFactory.getLog(MicrometerObservationRegistryTestExecutionListener.class);
 
-	private static final String OBSERVATION_THREAD_LOCAL_ACCESSOR_CLASS_NAME =
-			"io.micrometer.observation.contextpropagation.ObservationThreadLocalAccessor";
-
 	/**
 	 * Attribute name for a {@link TestContext} attribute which contains the
 	 * {@link ObservationRegistry} that was previously stored in the
@@ -62,26 +57,50 @@ class MicrometerObservationRegistryTestExecutionListener extends AbstractTestExe
 	private static final String PREVIOUS_OBSERVATION_REGISTRY = Conventions.getQualifiedAttributeName(
 			MicrometerObservationRegistryTestExecutionListener.class, "previousObservationRegistry");
 
+	static final String DEPENDENCIES_ERROR_MESSAGE = """
+			MicrometerObservationRegistryTestExecutionListener requires \
+			io.micrometer:micrometer-observation:1.10.8 or higher and \
+			io.micrometer:context-propagation:1.0.3 or higher.""";
+
+	static final String THREAD_LOCAL_ACCESSOR_CLASS_NAME = "io.micrometer.context.ThreadLocalAccessor";
+
+	static final String OBSERVATION_THREAD_LOCAL_ACCESSOR_CLASS_NAME =
+			"io.micrometer.observation.contextpropagation.ObservationThreadLocalAccessor";
+
+	private static final String ERROR_MESSAGE;
 
 	static {
-		// Trigger eager resolution of Micrometer Observation types during static
-		// initialization of this class to ensure that this listener can be properly
-		// skipped when SpringFactoriesLoader attempts to load it, if micrometer-observation
-		// is not in the classpath or if the version of ObservationThreadLocalAccessor
+		// Trigger eager resolution of Micrometer Observation types to ensure that
+		// this listener can be properly skipped when SpringFactoriesLoader attempts
+		// to load it -- for example, if context-propagation and micrometer-observation
+		// are not in the classpath or if the version of ObservationThreadLocalAccessor
 		// present does not include the getObservationRegistry() method.
-		String errorMessage =
-				"MicrometerObservationRegistryTestExecutionListener requires micrometer-observation 1.10.8 or higher";
-		Class<?> clazz;
+
+		String errorMessage = null;
+		ClassLoader classLoader = MicrometerObservationRegistryTestExecutionListener.class.getClassLoader();
+		String classToCheck = THREAD_LOCAL_ACCESSOR_CLASS_NAME;
 		try {
-			clazz = Class.forName(OBSERVATION_THREAD_LOCAL_ACCESSOR_CLASS_NAME, true,
-					TestExecutionListener.class.getClassLoader());
+			Class.forName(classToCheck, false, classLoader);
+			classToCheck = OBSERVATION_THREAD_LOCAL_ACCESSOR_CLASS_NAME;
+			Class<?> clazz = Class.forName(classToCheck, false, classLoader);
+			Method method = ReflectionUtils.findMethod(clazz, "getObservationRegistry");
+			if (method == null) {
+				errorMessage = classToCheck + ". Method getObservationRegistry() not found. " + DEPENDENCIES_ERROR_MESSAGE;
+			}
 		}
 		catch (Throwable ex) {
-			throw new IllegalStateException(errorMessage, ex);
+			errorMessage = classToCheck + ". " + DEPENDENCIES_ERROR_MESSAGE;
 		}
+		ERROR_MESSAGE = errorMessage;
+	}
 
-		Method method = ReflectionUtils.findMethod(clazz, "getObservationRegistry");
-		Assert.state(method != null, errorMessage);
+
+	public MicrometerObservationRegistryTestExecutionListener() {
+		// If required dependencies are missing, throw a NoClassDefFoundError so
+		// that this listener will be properly skipped in TestContextFailureHandler.
+		if (ERROR_MESSAGE != null) {
+			throw new NoClassDefFoundError(ERROR_MESSAGE);
+		}
 	}
 
 
