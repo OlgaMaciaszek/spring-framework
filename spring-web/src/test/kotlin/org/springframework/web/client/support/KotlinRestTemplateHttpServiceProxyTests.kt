@@ -2,7 +2,7 @@ package org.springframework.web.client.support
 
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -60,43 +60,48 @@ class KotlinRestTemplateHttpServiceProxyTests {
     @Throws(InterruptedException::class)
     fun getRequest() {
         val response = testService.request
+
         val request = server.takeRequest()
-        Assertions.assertThat(response).isEqualTo("Hello Spring!")
-        Assertions.assertThat(request.method).isEqualTo("GET")
-        Assertions.assertThat(request.path).isEqualTo("/test")
+        assertThat(response).isEqualTo("Hello Spring!")
+        assertThat(request.method).isEqualTo("GET")
+        assertThat(request.path).isEqualTo("/test")
     }
 
     @Test
     @Throws(InterruptedException::class)
     fun getRequestWithPathVariable() {
         val response = testService.getRequestWithPathVariable("456")
+
         val request = server.takeRequest()
-        Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        Assertions.assertThat(response.body).isEqualTo("Hello Spring!")
-        Assertions.assertThat(request.method).isEqualTo("GET")
-        Assertions.assertThat(request.path).isEqualTo("/test/456")
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(response.body).isEqualTo("Hello Spring!")
+        assertThat(request.method).isEqualTo("GET")
+        assertThat(request.path).isEqualTo("/test/456")
     }
 
     @Test
     @Throws(InterruptedException::class)
     fun getRequestWithDynamicUri() {
         val dynamicUri = server.url("/greeting/123").uri()
+
         val response = testService.getRequestWithDynamicUri(dynamicUri, "456")
+
         val request = server.takeRequest()
-        Assertions.assertThat(response.orElse("empty")).isEqualTo("Hello Spring!")
-        Assertions.assertThat(request.method).isEqualTo("GET")
-        Assertions.assertThat(request.requestUrl.uri()).isEqualTo(dynamicUri)
+        assertThat(response.orElse("empty")).isEqualTo("Hello Spring!")
+        assertThat(request.method).isEqualTo("GET")
+        assertThat(request.requestUrl.uri()).isEqualTo(dynamicUri)
     }
 
     @Test
     @Throws(InterruptedException::class)
     fun postWithRequestHeader() {
         testService.postRequestWithHeader("testHeader", "testBody")
+
         val request = server.takeRequest()
-        Assertions.assertThat(request.method).isEqualTo("POST")
-        Assertions.assertThat(request.path).isEqualTo("/test")
-        Assertions.assertThat(request.headers["testHeaderName"]).isEqualTo("testHeader")
-        Assertions.assertThat(request.body.readUtf8()).isEqualTo("testBody")
+        assertThat(request.method).isEqualTo("POST")
+        assertThat(request.path).isEqualTo("/test")
+        assertThat(request.headers["testHeaderName"]).isEqualTo("testHeader")
+        assertThat(request.body.readUtf8()).isEqualTo("testBody")
     }
 
     @Test
@@ -105,25 +110,29 @@ class KotlinRestTemplateHttpServiceProxyTests {
         val map: MultiValueMap<String, String> = LinkedMultiValueMap()
         map.add("param1", "value 1")
         map.add("param2", "value 2")
+
         testService.postForm(map)
+
         val request = server.takeRequest()
-        Assertions.assertThat(request.headers["Content-Type"])
+        assertThat(request.headers["Content-Type"])
                 .isEqualTo("application/x-www-form-urlencoded;charset=UTF-8")
-        Assertions.assertThat(request.body.readUtf8()).isEqualTo("param1=value+1&param2=value+2")
+        assertThat(request.body.readUtf8()).isEqualTo("param1=value+1&param2=value+2")
     }
 
+    // gh-30342
     @Test
     @Throws(InterruptedException::class)
-    fun  // gh-30342
-            multipart() {
+    fun multipart() {
         val fileName = "testFileName"
         val originalFileName = "originalTestFileName"
         val file: MultipartFile = MockMultipartFile(fileName, originalFileName, MediaType.APPLICATION_JSON_VALUE,
                 "test".toByteArray())
+
         testService.postMultipart(file, "test2")
+
         val request = server.takeRequest()
-        Assertions.assertThat(request.headers["Content-Type"]).startsWith("multipart/form-data;boundary=")
-        Assertions.assertThat(request.body.readUtf8()).containsSubsequence(
+        assertThat(request.headers["Content-Type"]).startsWith("multipart/form-data;boundary=")
+        assertThat(request.body.readUtf8()).containsSubsequence(
                 "Content-Disposition: form-data; name=\"file\"; filename=\"originalTestFileName\"",
                 "Content-Type: application/json", "Content-Length: 4", "test",
                 "Content-Disposition: form-data; name=\"anotherPart\"", "Content-Type: text/plain;charset=UTF-8",
@@ -138,6 +147,7 @@ class KotlinRestTemplateHttpServiceProxyTests {
 
 
     private interface TestService {
+
         @get:GetExchange("/test")
         val request: String
 
