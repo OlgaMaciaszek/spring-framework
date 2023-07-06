@@ -33,6 +33,9 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Integration tests for {@link HttpServiceProxyFactory HTTP Service proxy} using
+ * {@link RestTemplate} and {@link MockWebServer}.
+ *
  * @author Olga Maciaszek-Sharma
  */
 class RestTemplateHttpServiceProxyTests {
