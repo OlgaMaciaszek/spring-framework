@@ -37,14 +37,14 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 /**
  * An {@link HttpExchangeAdapter} that enables an {@link HttpServiceProxyFactory} to use
  * {@link RestTemplate} for request execution.
- *
+ * <p>
  * Use static factory methods in this class to create an {@link HttpServiceProxyFactory}
  * configured with a given {@link RestTemplate}.
  *
  * @author Olga Maciaszek-Sharma
  * @since 6.1
  */
-public class RestTemplateAdapter implements HttpExchangeAdapter {
+public final class RestTemplateAdapter implements HttpExchangeAdapter {
 
 	private final RestTemplate restTemplate;
 
@@ -91,7 +91,7 @@ public class RestTemplateAdapter implements HttpExchangeAdapter {
 			uri = requestValues.getUri();
 		}
 		else if (requestValues.getUriTemplate() != null) {
-			uri = restTemplate.getUriTemplateHandler().expand(requestValues.getUriTemplate(),
+			uri = this.restTemplate.getUriTemplateHandler().expand(requestValues.getUriTemplate(),
 					requestValues.getUriVariables());
 		}
 		else {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2002-2023 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.web.client.support;
 
 import java.io.IOException;
@@ -17,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -26,6 +43,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.PostExchange;
+import org.springframework.web.service.annotation.PutExchange;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import org.springframework.web.testfixture.servlet.MockMultipartFile;
 import org.springframework.web.util.DefaultUriBuilderFactory;
@@ -144,6 +162,24 @@ class RestTemplateHttpServiceProxyTests {
 				"Content-Length: 5", "test2");
 	}
 
+	@Test
+	void putRequestWithCookies() throws InterruptedException {
+		testService.putRequestWithCookies("test1", "test2");
+
+		RecordedRequest request = this.server.takeRequest();
+		assertThat(request.getMethod()).isEqualTo("PUT");
+		assertThat(request.getHeader("Cookie")).isEqualTo("firstCookie=test1; secondCookie=test2");
+	}
+
+	@Test
+	void putRequestWithSameNameCookies() throws InterruptedException {
+		testService.putRequestWithSameNameCookies("test1", "test2");
+
+		RecordedRequest request = this.server.takeRequest();
+		assertThat(request.getMethod()).isEqualTo("PUT");
+		assertThat(request.getHeader("Cookie")).isEqualTo("testCookie=test1; testCookie=test2");
+	}
+
 	private void prepareResponse() {
 		MockResponse response = new MockResponse();
 		response.setHeader("Content-Type", "text/plain").setBody("Hello Spring!");
@@ -156,20 +192,28 @@ class RestTemplateHttpServiceProxyTests {
 		String getRequest();
 
 		@GetExchange("/test/{id}")
-
 		ResponseEntity<String> getRequestWithPathVariable(@PathVariable String id);
 
 		@GetExchange("/test/{id}")
 		Optional<String> getRequestWithDynamicUri(@Nullable URI uri, @PathVariable String id);
 
 		@PostExchange("/test")
-		void postRequestWithHeader(@RequestHeader("testHeaderName") String testHeader, @RequestBody String requestBody);
+		void postRequestWithHeader(@RequestHeader("testHeaderName") String testHeader,
+				@RequestBody String requestBody);
 
 		@PostExchange(contentType = "application/x-www-form-urlencoded")
 		void postForm(@RequestParam MultiValueMap<String, String> params);
 
 		@PostExchange
 		void postMultipart(MultipartFile file, @RequestPart String anotherPart);
+
+		@PutExchange
+		void putRequestWithCookies(@CookieValue String firstCookie,
+				@CookieValue String secondCookie);
+
+		@PutExchange
+		void putRequestWithSameNameCookies(@CookieValue("testCookie") String firstCookie,
+				@CookieValue("testCookie") String secondCookie);
 
 	}
 

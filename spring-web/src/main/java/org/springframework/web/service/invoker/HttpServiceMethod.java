@@ -53,6 +53,7 @@ import org.springframework.web.service.annotation.HttpExchange;
  *
  * @author Rossen Stoyanchev
  * @author Sebastien Deleuze
+ * @author Olga Maciaszek-Sharma
  * @since 6.0
  */
 final class HttpServiceMethod {
@@ -282,7 +283,6 @@ final class HttpServiceMethod {
 
 	}
 
-
 	private record ExchangeResponseFunction(
 			Function<HttpRequestValues, Object> responseFunction) implements ResponseFunction {
 
@@ -311,8 +311,8 @@ final class HttpServiceMethod {
 				MethodParameter bodyParam = actualReturnParam.nested();
 				Class<?> bodyType = bodyParam.getNestedParameterType();
 				if (bodyType.equals(Void.class)) {
-					responseFunction = request -> processResponse(client.exchangeForBodilessEntity(request),
-							returnOptional);
+					responseFunction = request -> processResponse(client
+									.exchangeForBodilessEntity(request), returnOptional);
 				}
 				else {
 					ParameterizedTypeReference<?> bodyTypeReference = ParameterizedTypeReference

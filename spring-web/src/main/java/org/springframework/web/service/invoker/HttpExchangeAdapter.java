@@ -48,8 +48,8 @@ public interface HttpExchangeAdapter {
 	 * Perform the given request and decode the response content to the given type.
 	 * @param requestValues the request to perform
 	 * @param bodyType the target type to decode to
-	 * @return the decoded response.
 	 * @param <T> the type the response is decoded to
+	 * @return the decoded response.
 	 */
 	@Nullable
 	<T> T exchangeForBody(HttpRequestValues requestValues, ParameterizedTypeReference<T> bodyType);

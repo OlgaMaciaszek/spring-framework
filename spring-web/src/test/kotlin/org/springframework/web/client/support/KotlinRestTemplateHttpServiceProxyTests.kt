@@ -1,3 +1,19 @@
+/*
+ * Copyright 2002-2023 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.web.client.support
 
 import okhttp3.mockwebserver.MockResponse
@@ -17,6 +33,7 @@ import org.springframework.web.client.RestTemplate
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.service.annotation.GetExchange
 import org.springframework.web.service.annotation.PostExchange
+import org.springframework.web.service.annotation.PutExchange
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import org.springframework.web.testfixture.servlet.MockMultipartFile
 import org.springframework.web.util.DefaultUriBuilderFactory
@@ -139,6 +156,28 @@ class KotlinRestTemplateHttpServiceProxyTests {
                 "Content-Length: 5", "test2")
     }
 
+    @Test
+    @Throws(InterruptedException::class)
+    fun putRequestWithCookies() {
+        testService.putRequestWithCookies("test1", "test2")
+
+        val request = server.takeRequest()
+        assertThat(request.method).isEqualTo("PUT")
+        assertThat(request.getHeader("Cookie"))
+                .isEqualTo("firstCookie=test1; secondCookie=test2")
+    }
+
+    @Test
+    @Throws(InterruptedException::class)
+    fun putRequestWithSameNameCookies() {
+        testService.putRequestWithSameNameCookies("test1", "test2")
+
+        val request = server.takeRequest()
+        assertThat(request.method).isEqualTo("PUT")
+        assertThat(request.getHeader("Cookie"))
+                .isEqualTo("testCookie=test1; testCookie=test2")
+    }
+
     private fun prepareResponse() {
         val response = MockResponse()
         response.setHeader("Content-Type", "text/plain").setBody("Hello Spring!")
@@ -152,19 +191,28 @@ class KotlinRestTemplateHttpServiceProxyTests {
         val request: String
 
         @GetExchange("/test/{id}")
-        fun getRequestWithPathVariable(@PathVariable id: String?): ResponseEntity<String>
+        fun getRequestWithPathVariable(@PathVariable id: String): ResponseEntity<String>
 
         @GetExchange("/test/{id}")
-        fun getRequestWithDynamicUri(@Nullable uri: URI?, @PathVariable id: String?): Optional<String>
+        fun getRequestWithDynamicUri(@Nullable uri: URI, @PathVariable id: String): Optional<String>
 
         @PostExchange("/test")
-        fun postRequestWithHeader(@RequestHeader("testHeaderName") testHeader: String?, @RequestBody requestBody: String?)
+        fun postRequestWithHeader(@RequestHeader("testHeaderName") testHeader: String,
+                                  @RequestBody requestBody: String)
 
         @PostExchange(contentType = "application/x-www-form-urlencoded")
-        fun postForm(@RequestParam params: MultiValueMap<String, String>?)
+        fun postForm(@RequestParam params: MultiValueMap<String, String>)
 
         @PostExchange
-        fun postMultipart(file: MultipartFile?, @RequestPart anotherPart: String?)
+        fun postMultipart(file: MultipartFile, @RequestPart anotherPart: String)
+
+        @PutExchange
+        fun putRequestWithCookies(@CookieValue firstCookie: String,
+                                  @CookieValue secondCookie: String)
+
+        @PutExchange
+        fun putRequestWithSameNameCookies(@CookieValue("testCookie") firstCookie: String,
+                                          @CookieValue("testCookie") secondCookie: String)
     }
 
 }

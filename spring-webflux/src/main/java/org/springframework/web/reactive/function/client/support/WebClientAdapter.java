@@ -25,10 +25,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.service.invoker.AbstractReactorHttpExchangeAdapter;
 import org.springframework.web.service.invoker.HttpRequestValues;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import org.springframework.web.service.invoker.ReactorHttpExchangeAdapter;
-import org.springframework.web.service.invoker.AbstractReactorHttpExchangeAdapter;
 
 /**
  * {@link ReactorHttpExchangeAdapter} that enables an {@link HttpServiceProxyFactory}

@@ -28,6 +28,7 @@ import org.springframework.http.ResponseEntity;
  * {@linkplain HttpServiceProxyFactory#createClient(Class) HTTP service proxy}.
  *
  * @author Rossen Stoyanchev
+ * @author Olga Maciaszek-Sharma
  * @since 6.0
  * @deprecated in favor of {@link ReactorHttpExchangeAdapter}
  */
@@ -91,7 +92,8 @@ public interface HttpClientAdapter {
 
 	/**
 	 * Adapt this {@link HttpClientAdapter} to {@link ReactorHttpExchangeAdapter}.
-	 * @return
+	 * @return a {@link ReactorHttpExchangeAdapter} instance created that delegating to
+	 * the underlying {@link HttpClientAdapter} implementation
 	 * @since 6.1
 	 */
 	default ReactorHttpExchangeAdapter asHttpExchangeAdapter() {
