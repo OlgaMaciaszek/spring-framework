@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,12 +46,15 @@ public class HttpMethodArgumentResolver implements HttpServiceArgumentResolver {
 		}
 
 		Assert.notNull(argument, "HttpMethod is required");
-		HttpMethod httpMethod = (HttpMethod) argument;
-		requestValues.setHttpMethod(httpMethod);
-		if (logger.isTraceEnabled()) {
-			logger.trace("Resolved HTTP method to: " + httpMethod.name());
+		if(argument != null) {
+			HttpMethod httpMethod = (HttpMethod) argument;
+			requestValues.setHttpMethod(httpMethod);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Resolved HTTP method to: " + httpMethod.name());
+			}
+			return true;
 		}
-
+		Assert.isTrue(parameter.isOptional(), "HttpMethod is required");
 		return true;
 	}
 

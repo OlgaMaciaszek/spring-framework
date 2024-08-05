@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2023 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.springframework.core.MethodParameter;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.util.Assert;
 
 /**
  * {@link RSocketServiceArgumentResolver} for a
@@ -30,6 +31,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
  * Collection or an array, as multiple route variables.
  *
  * @author Rossen Stoyanchev
+ * @author Olga Maciaszek-Sharma
  * @since 6.0
  */
 public class DestinationVariableArgumentResolver implements RSocketServiceArgumentResolver {
@@ -57,7 +59,9 @@ public class DestinationVariableArgumentResolver implements RSocketServiceArgume
 			else {
 				requestValues.addRouteVariable(argument);
 			}
+			return true;
 		}
+		Assert.isTrue(parameter.isOptional(), () -> "Missing destination variable.");
 
 		return true;
 	}
