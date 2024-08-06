@@ -17,6 +17,7 @@
 package org.springframework.web.service.invoker;
 
 import java.net.URI;
+import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.lang.Nullable;
@@ -36,8 +37,14 @@ public class UrlArgumentResolver implements HttpServiceArgumentResolver {
 	public boolean resolve(
 			@Nullable Object argument, MethodParameter parameter, HttpRequestValues.Builder requestValues) {
 
-		if (!parameter.getParameterType().equals(URI.class)) {
+		parameter = parameter.nestedIfOptional();
+
+		if (!parameter.getNestedParameterType().equals(URI.class)) {
 			return false;
+		}
+
+		if (argument instanceof Optional<?> optionalValue) {
+			argument = optionalValue.orElse(null);
 		}
 
 		if (argument != null) {
@@ -45,7 +52,7 @@ public class UrlArgumentResolver implements HttpServiceArgumentResolver {
 			return true;
 		}
 
-		Assert.isTrue(parameter.isOptional(), "URL is required");
+		Assert.isTrue(parameter.isOptional(), "URI is required");
 
 		return true;
 	}

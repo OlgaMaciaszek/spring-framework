@@ -16,6 +16,8 @@
 
 package org.springframework.web.service.invoker;
 
+import java.util.Optional;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,11 +43,16 @@ public class HttpMethodArgumentResolver implements HttpServiceArgumentResolver {
 	public boolean resolve(
 			@Nullable Object argument, MethodParameter parameter, HttpRequestValues.Builder requestValues) {
 
-		if (!parameter.getParameterType().equals(HttpMethod.class)) {
+		parameter = parameter.nestedIfOptional();
+
+		if (!parameter.getNestedParameterType().equals(HttpMethod.class)) {
 			return false;
 		}
 
-		Assert.notNull(argument, "HttpMethod is required");
+		if (argument instanceof Optional<?> optionalValue) {
+			argument = optionalValue.orElse(null);
+		}
+
 		if(argument != null) {
 			HttpMethod httpMethod = (HttpMethod) argument;
 			requestValues.setHttpMethod(httpMethod);

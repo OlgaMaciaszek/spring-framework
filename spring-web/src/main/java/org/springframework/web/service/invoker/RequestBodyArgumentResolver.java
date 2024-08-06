@@ -16,6 +16,8 @@
 
 package org.springframework.web.service.invoker;
 
+import java.util.Optional;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.ReactiveAdapter;
@@ -67,6 +69,10 @@ public class RequestBodyArgumentResolver implements HttpServiceArgumentResolver 
 		RequestBody annot = parameter.getParameterAnnotation(RequestBody.class);
 		if (annot == null) {
 			return false;
+		}
+
+		if (argument instanceof Optional<?> optionalValue) {
+			argument = optionalValue.orElse(null);
 		}
 
 		if (argument != null) {
