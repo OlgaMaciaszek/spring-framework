@@ -1,5 +1,5 @@
 /*
-` * Copyright 2002-2024 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,12 +57,14 @@ public class PayloadArgumentResolver implements RSocketServiceArgumentResolver {
 			return false;
 		}
 
+		parameter = parameter.nestedIfOptional();
+
 		if (argument instanceof Optional<?> optionalValue) {
 			argument = optionalValue.orElse(null);
 		}
 
 		if (argument != null) {
-			ReactiveAdapter reactiveAdapter = this.reactiveAdapterRegistry.getAdapter(parameter.getParameterType());
+			ReactiveAdapter reactiveAdapter = this.reactiveAdapterRegistry.getAdapter(parameter.getNestedParameterType());
 			if (reactiveAdapter == null) {
 				requestValues.setPayloadValue(argument);
 			}

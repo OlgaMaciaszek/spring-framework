@@ -71,13 +71,15 @@ public class RequestBodyArgumentResolver implements HttpServiceArgumentResolver 
 			return false;
 		}
 
+		parameter = parameter.nestedIfOptional();
+
 		if (argument instanceof Optional<?> optionalValue) {
 			argument = optionalValue.orElse(null);
 		}
 
 		if (argument != null) {
 			if (this.reactiveAdapterRegistry != null) {
-				ReactiveAdapter adapter = this.reactiveAdapterRegistry.getAdapter(parameter.getParameterType());
+				ReactiveAdapter adapter = this.reactiveAdapterRegistry.getAdapter(parameter.getNestedParameterType());
 				if (adapter != null) {
 					MethodParameter nestedParameter = parameter.nested();
 
