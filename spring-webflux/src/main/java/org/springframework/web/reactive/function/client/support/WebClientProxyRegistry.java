@@ -56,7 +56,7 @@ public class WebClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
 
 		@Override
 		protected WebClientHttpServiceGroup createGroup(String baseUrl) {
-			return WebClientHttpServiceGroup.create(baseUrl, this.baseClientBuilder);
+			return WebClientHttpServiceGroup.create(baseUrl, this.baseClientBuilder, getComponentProvider());
 		}
 
 		@Override

@@ -67,7 +67,7 @@ public class RestClientProxyRegistryTests {
 		HttpServiceProxyRegistry registry =
 				RestClientProxyRegistry.builder(baseClientBuilder)
 						.addClient(baseUrl,
-								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								configurer -> configurer.addServiceTypes(GreetingService.class),
 								builder -> builder.defaultHeader("Some-Header", "h1"))
 						.build();
 
@@ -96,10 +96,10 @@ public class RestClientProxyRegistryTests {
 		HttpServiceProxyRegistry registry =
 				RestClientProxyRegistry.builder(baseClientBuilder)
 						.addClient(baseUrl1,
-								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								configurer -> configurer.addServiceTypes(GreetingService.class),
 								builder -> builder.defaultHeader("Some-Header", "h1"))
 						.addClient(baseUrl2,
-								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								configurer -> configurer.addServiceTypes(GreetingService.class),
 								builder -> builder.defaultHeader("Some-Header", "h2"))
 						.build();
 
@@ -134,10 +134,10 @@ public class RestClientProxyRegistryTests {
 		RestClientProxyRegistry.Builder registryBuilder =
 				RestClientProxyRegistry.builder(baseClientBuilder)
 						.addClient(baseUrl1,
-								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								configurer -> configurer.addServiceTypes(GreetingService.class),
 								builder -> builder.defaultHeader("Some-Header", "h1"))
 						.addClient(baseUrl2,
-								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								configurer -> configurer.addServiceTypes(GreetingService.class),
 								builder -> builder.defaultHeader("Some-Header", "h2"));
 
 		registryBuilder.apply(auth().user("john").password("123"));

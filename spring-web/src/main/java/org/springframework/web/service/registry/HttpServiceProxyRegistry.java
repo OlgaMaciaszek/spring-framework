@@ -22,6 +22,8 @@ import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.context.EnvironmentAware;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 /**
@@ -50,7 +52,7 @@ public interface HttpServiceProxyRegistry {
 	 * @param <B> the type of builder
 	 * @param <CB> the type of client builder (e.g. RestClient.Builder)
 	 */
-	interface Builder<B extends Builder<B, CB>, CB> {
+	interface Builder<B extends Builder<B, CB>, CB> extends EnvironmentAware, ResourceLoaderAware {
 
 		default Builder<B, CB> addClient(String baseUrl,
 				Consumer<HttpServiceConfigurer> httpServiceConfigurer,

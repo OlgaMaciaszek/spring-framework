@@ -16,6 +16,10 @@
 
 package org.springframework.web.service.registry;
 
+import java.util.List;
+
+import org.springframework.core.type.filter.TypeFilter;
+
 /**
  * Helps with registration of HTTP service types.
  *
@@ -24,6 +28,15 @@ package org.springframework.web.service.registry;
  */
 public interface HttpServiceConfigurer {
 
-	HttpServiceConfigurer addHttpServiceTypes(Class<?>... httpServiceTypes);
+	HttpServiceConfigurer addServiceTypes(Class<?>... httpServiceTypes);
+
+	HttpServiceConfigurer discoverServiceTypes(
+			String basePackage, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters);
+
+	default HttpServiceConfigurer discoverServiceTypes(
+			Class<?> basePackageClass, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters) {
+
+		return discoverServiceTypes(basePackageClass.getName(), includeFilters, excludeFilters);
+	}
 
 }

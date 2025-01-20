@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2024 the original author or authors.
+ * Copyright 2002-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.springframework.web.client.support;
 
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.service.invoker.HttpExchangeAdapter;
 import org.springframework.web.service.registry.AbstractHttpServiceGroup;
@@ -30,8 +31,11 @@ import org.springframework.web.service.registry.HttpServiceGroup;
 public final class RestClientHttpServiceGroup extends AbstractHttpServiceGroup<RestClient.Builder> {
 
 
-	private RestClientHttpServiceGroup(String baseUrl, RestClient.Builder baseClientBuilder) {
-		super(baseUrl, baseClientBuilder.clone());
+	private RestClientHttpServiceGroup(
+			String baseUrl, RestClient.Builder baseClientBuilder,
+			ClassPathScanningCandidateComponentProvider componentProvider) {
+
+		super(baseUrl, baseClientBuilder.clone(), componentProvider);
 		configureClient(builder -> builder.baseUrl(baseUrl));
 	}
 
@@ -43,8 +47,11 @@ public final class RestClientHttpServiceGroup extends AbstractHttpServiceGroup<R
 	}
 
 
-	public static RestClientHttpServiceGroup create(String baseUrl, RestClient.Builder baseClientBuilder) {
-		return new RestClientHttpServiceGroup(baseUrl, baseClientBuilder);
+	public static RestClientHttpServiceGroup create(
+			String baseUrl, RestClient.Builder baseClientBuilder,
+			ClassPathScanningCandidateComponentProvider componentProvider) {
+
+		return new RestClientHttpServiceGroup(baseUrl, baseClientBuilder, componentProvider);
 	}
 
 

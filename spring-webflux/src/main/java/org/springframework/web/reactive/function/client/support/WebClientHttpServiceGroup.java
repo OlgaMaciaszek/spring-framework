@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2024 the original author or authors.
+ * Copyright 2002-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.springframework.web.reactive.function.client.support;
 
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.service.invoker.HttpExchangeAdapter;
 import org.springframework.web.service.registry.AbstractHttpServiceGroup;
@@ -30,8 +31,11 @@ import org.springframework.web.service.registry.HttpServiceGroup;
 public final class WebClientHttpServiceGroup extends AbstractHttpServiceGroup<WebClient.Builder> {
 
 
-	private WebClientHttpServiceGroup(String baseUrl, WebClient.Builder clientBuilder) {
-		super(baseUrl, clientBuilder);
+	private WebClientHttpServiceGroup(
+			String baseUrl, WebClient.Builder clientBuilder,
+			ClassPathScanningCandidateComponentProvider componentProvider) {
+
+		super(baseUrl, clientBuilder, componentProvider);
 		configureClient(builder -> builder.baseUrl(baseUrl));
 	}
 
@@ -43,8 +47,11 @@ public final class WebClientHttpServiceGroup extends AbstractHttpServiceGroup<We
 	}
 
 
-	public static WebClientHttpServiceGroup create(String baseUrl, WebClient.Builder baseClientBuilder) {
-		return new WebClientHttpServiceGroup(baseUrl, baseClientBuilder);
+	public static WebClientHttpServiceGroup create(
+			String baseUrl, WebClient.Builder baseClientBuilder,
+			ClassPathScanningCandidateComponentProvider componentProvider) {
+
+		return new WebClientHttpServiceGroup(baseUrl, baseClientBuilder, componentProvider);
 	}
 
 

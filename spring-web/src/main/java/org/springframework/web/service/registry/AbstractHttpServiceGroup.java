@@ -24,6 +24,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.util.ClassUtils;
+import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.invoker.HttpExchangeAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
@@ -36,6 +41,10 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
  */
 public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<CB> {
 
+	private static final AnnotationTypeFilter httpExchangeAnnotationFilter =
+			new AnnotationTypeFilter(HttpExchange.class, true);
+
+
 	private final String baseUrl;
 
 	private final CB clientBuilder;
@@ -44,12 +53,15 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 
 	private final List<Class<?>> httpServiceTypes = new ArrayList<>();
 
-	private final HttpServiceConfigurer httpServiceConfigurer = new DefaultHttpServiceConfigurer();
+	private final DefaultHttpServiceConfigurer httpServiceConfigurer;
 
 
-	protected AbstractHttpServiceGroup(String baseUrl, CB clientBuilder) {
+	protected AbstractHttpServiceGroup(
+			String baseUrl, CB clientBuilder, ClassPathScanningCandidateComponentProvider componentProvider) {
+
 		this.baseUrl = baseUrl;
 		this.clientBuilder = clientBuilder;
+		this.httpServiceConfigurer = new DefaultHttpServiceConfigurer(componentProvider);
 	}
 
 
@@ -97,9 +109,40 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 
 	private class DefaultHttpServiceConfigurer implements HttpServiceConfigurer {
 
+		private ClassPathScanningCandidateComponentProvider componentProvider;
+
+		public DefaultHttpServiceConfigurer(ClassPathScanningCandidateComponentProvider componentProvider) {
+			this.componentProvider = componentProvider;
+		}
+
 		@Override
-		public HttpServiceConfigurer addHttpServiceTypes(Class<?>... types) {
+		public HttpServiceConfigurer addServiceTypes(Class<?>... types) {
 			Collections.addAll(AbstractHttpServiceGroup.this.httpServiceTypes, types);
+			return this;
+		}
+
+		@Override
+		public HttpServiceConfigurer discoverServiceTypes(
+				String basePackage, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters) {
+
+			includeFilters.add(httpExchangeAnnotationFilter);
+			includeFilters.forEach(this.componentProvider::addIncludeFilter);
+			excludeFilters.forEach(this.componentProvider::addExcludeFilter);
+
+			this.componentProvider.findCandidateComponents(basePackage).forEach(definition -> {
+				String className = definition.getBeanClassName();
+				if (className == null) {
+					return;
+				}
+				try {
+					Class<?> clazz = ClassUtils.forName(className, AbstractHttpServiceGroup.class.getClassLoader());
+					AbstractHttpServiceGroup.this.httpServiceTypes.add(clazz);
+				}
+				catch (ClassNotFoundException ex) {
+					throw new RuntimeException("Failed to find class name '" + className + "'", ex);
+				}
+			});
+
 			return this;
 		}
 	}

@@ -25,6 +25,10 @@ import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
@@ -88,13 +92,38 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 
 		private final List<HttpServiceGroup<CB>> groups = new ArrayList<>();
 
+		private @Nullable Environment environment;
+
+		private @Nullable ResourceLoader resourceLoader;
+
+		private @Nullable ClassPathScanningCandidateComponentProvider componentProvider;
+
+		@Override
+		public void setEnvironment(Environment environment) {
+			this.environment = environment;
+		}
+
+		@Override
+		public void setResourceLoader(ResourceLoader resourceLoader) {
+			this.resourceLoader = resourceLoader;
+		}
+
+		protected ClassPathScanningCandidateComponentProvider getComponentProvider() {
+			if (this.componentProvider == null) {
+				this.environment = (this.environment != null ? this.environment : new StandardEnvironment());
+				this.componentProvider = new ClassPathScanningCandidateComponentProvider(false, this.environment);
+				this.componentProvider.setResourceLoader(this.resourceLoader);
+			}
+			return this.componentProvider;
+		}
+
 		@Override
 		public Builder<B, CB> addClient(String baseUrl,
 				Consumer<HttpServiceConfigurer> httpServiceConfigurerConsumer,
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer) {
 
-			HttpServiceGroup<CB> group = createGroup(baseUrl);
+			AbstractHttpServiceGroup<CB> group = createGroup(baseUrl);
 			this.groups.add(group);
 
 			group.configureHttpServices(httpServiceConfigurerConsumer);
@@ -104,7 +133,7 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 			return self();
 		}
 
-		protected abstract HttpServiceGroup<CB> createGroup(String baseUrl);
+		protected abstract AbstractHttpServiceGroup<CB> createGroup(String baseUrl);
 
 		@Override
 		public Builder<B, CB> apply(HttpServiceGroup.Configurer<CB> configurer) {
