@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2024 the original author or authors.
+ * Copyright 2002-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import java.io.IOException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.service.annotation.GetExchange;
@@ -66,9 +66,9 @@ public class RestClientProxyRegistryTests {
 
 		HttpServiceProxyRegistry registry =
 				RestClientProxyRegistry.builder(baseClientBuilder)
-						.group(baseUrl)
-						.httpService(GreetingService.class)
-						.configureClient(clientBuilder -> clientBuilder.defaultHeader("Some-Header", "h1"))
+						.addClient(baseUrl,
+								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								builder -> builder.defaultHeader("Some-Header", "h1"))
 						.build();
 
 		GreetingService service = registry.getClientForBaseUrl(baseUrl, GreetingService.class);
@@ -95,12 +95,12 @@ public class RestClientProxyRegistryTests {
 
 		HttpServiceProxyRegistry registry =
 				RestClientProxyRegistry.builder(baseClientBuilder)
-						.group(baseUrl1)
-						.httpService(GreetingService.class)
-						.configureClient(clientBuilder -> clientBuilder.defaultHeader("Some-Header", "h1"))
-						.group(baseUrl2)
-						.httpService(GreetingService.class)
-						.configureClient(clientBuilder -> clientBuilder.defaultHeader("Some-Header", "h2"))
+						.addClient(baseUrl1,
+								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								builder -> builder.defaultHeader("Some-Header", "h1"))
+						.addClient(baseUrl2,
+								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								builder -> builder.defaultHeader("Some-Header", "h2"))
 						.build();
 
 		GreetingService g1 = registry.getClientForBaseUrl(baseUrl1, GreetingService.class);
@@ -133,12 +133,12 @@ public class RestClientProxyRegistryTests {
 
 		RestClientProxyRegistry.Builder registryBuilder =
 				RestClientProxyRegistry.builder(baseClientBuilder)
-						.group(baseUrl1)
-						.httpService(GreetingService.class)
-						.configureClient(clientBuilder -> clientBuilder.defaultHeader("Some-Header", "h1"))
-						.group(baseUrl2)
-						.httpService(GreetingService.class)
-						.configureClient(clientBuilder -> clientBuilder.defaultHeader("Some-Header", "h2"));
+						.addClient(baseUrl1,
+								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								builder -> builder.defaultHeader("Some-Header", "h1"))
+						.addClient(baseUrl2,
+								configurer -> configurer.addHttpServiceTypes(GreetingService.class),
+								builder -> builder.defaultHeader("Some-Header", "h2"));
 
 		registryBuilder.apply(auth().user("john").password("123"));
 
@@ -174,11 +174,9 @@ public class RestClientProxyRegistryTests {
 
 	static final class UserGroupConfigurer implements RestClientHttpServiceGroup.Configurer {
 
-		@Nullable
-		private String user;
+		private @Nullable String user;
 
-		@Nullable
-		private String password;
+		private @Nullable String password;
 
 		private UserGroupConfigurer() {
 		}

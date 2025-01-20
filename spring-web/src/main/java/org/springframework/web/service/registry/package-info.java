@@ -1,9 +1,7 @@
 /**
  * Registry for HTTP service proxies.
  */
-@NonNullApi
-@NonNullFields
+@NullMarked
 package org.springframework.web.service.registry;
 
-import org.springframework.lang.NonNullApi;
-import org.springframework.lang.NonNullFields;
+import org.jspecify.annotations.NullMarked;

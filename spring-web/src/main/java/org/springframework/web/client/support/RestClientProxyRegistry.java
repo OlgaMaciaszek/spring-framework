@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2024 the original author or authors.
+ * Copyright 2002-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import org.springframework.web.service.registry.AbstractHttpServiceProxyRegistry;
+import org.springframework.web.service.registry.HttpServiceConfigurer;
 import org.springframework.web.service.registry.HttpServiceGroup;
 import org.springframework.web.service.registry.HttpServiceProxyRegistry;
 
@@ -39,15 +40,8 @@ public class RestClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
 	}
 
 
-	public static GroupSpec builder(RestClient.Builder baseClientBuilder) {
-		return baseUrl -> new Builder(baseUrl, baseClientBuilder);
-	}
-
-
-	public interface GroupSpec {
-
-		Builder group(String baseUrl);
-
+	public static Builder builder(RestClient.Builder baseClientBuilder) {
+		return new Builder(baseClientBuilder);
 	}
 
 
@@ -55,8 +49,7 @@ public class RestClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
 
 		private final RestClient.Builder baseClientBuilder;
 
-		private Builder(String baseUrl, RestClient.Builder baseClientBuilder) {
-			super(RestClientHttpServiceGroup.create(baseUrl, baseClientBuilder));
+		private Builder(RestClient.Builder baseClientBuilder) {
 			this.baseClientBuilder = baseClientBuilder;
 		}
 
@@ -66,27 +59,22 @@ public class RestClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
 		}
 
 		@Override
-		public Builder group(String baseUrl) {
-			super.group(baseUrl);
-			return this;
+		public Builder addClient(String baseUrl,
+				Consumer<HttpServiceConfigurer> httpServiceConfigurerConsumer,
+				Consumer<RestClient.Builder> clientBuilderConsumer,
+				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer) {
+
+			super.addClient(baseUrl, httpServiceConfigurerConsumer, clientBuilderConsumer, proxyFactoryBuilderConsumer);
+			return self();
 		}
 
 		@Override
-		public Builder httpService(Class<?>... httpServiceTypes) {
-			super.httpService(httpServiceTypes);
-			return this;
-		}
+		public Builder addClient(String baseUrl,
+				Consumer<HttpServiceConfigurer> httpServiceConfigurer,
+				Consumer<RestClient.Builder> clientConfigurer) {
 
-		@Override
-		public Builder configureClient(Consumer<RestClient.Builder> configurer) {
-			super.configureClient(configurer);
-			return this;
-		}
-
-		@Override
-		public Builder configureProxyFactory(Consumer<HttpServiceProxyFactory.Builder> configurer) {
-			super.configureProxyFactory(configurer);
-			return this;
+			super.addClient(baseUrl, httpServiceConfigurer, clientConfigurer);
+			return self();
 		}
 
 		@Override

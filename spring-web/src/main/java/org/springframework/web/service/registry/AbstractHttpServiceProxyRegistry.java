@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2024 the original author or authors.
+ * Copyright 2002-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
@@ -50,9 +51,8 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 
 
 	@SuppressWarnings("unchecked")
-	@Nullable
 	@Override
-	public <S> S getClient(Class<S> httpServiceType) {
+	public <S> @Nullable S getClient(Class<S> httpServiceType) {
 		List<Object> proxies = this.proxies.get(httpServiceType);
 		if (CollectionUtils.isEmpty(proxies)) {
 			return null;
@@ -62,9 +62,8 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 	}
 
 	@SuppressWarnings("unchecked")
-	@Nullable
 	@Override
-	public <S> S getClientForBaseUrl(String baseUrl, Class<S> httpServiceType) {
+	public <S> @Nullable S getClientForBaseUrl(String baseUrl, Class<S> httpServiceType) {
 		Map<Class<?>, Object> map = this.proxiesByBaseUrl.get(baseUrl);
 		return (map != null ? (S) map.get(httpServiceType) : null);
 	}
@@ -83,48 +82,29 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 	/**
 	 * Base class for {@link HttpServiceProxyRegistry.Builder} implementations.
 	 * @param <B> the type of builder
+	 * @param <CB> the client builder type
 	 */
-	protected static abstract class AbstractBuilder<B extends AbstractBuilder<B, CB>, CB> implements Builder<B, CB> {
-
-		private HttpServiceGroup<CB> group;
+	protected abstract static class AbstractBuilder<B extends AbstractBuilder<B, CB>, CB> implements Builder<B, CB> {
 
 		private final List<HttpServiceGroup<CB>> groups = new ArrayList<>();
 
-		public AbstractBuilder(HttpServiceGroup<CB> firstGroup) {
-			setGroup(firstGroup);
-		}
-
-		private void setGroup(HttpServiceGroup<CB> group) {
-			this.group = group;
-			this.groups.add(this.group);
-		}
-
 		@Override
-		public Builder<B, CB> group(String baseUrl) {
+		public Builder<B, CB> addClient(String baseUrl,
+				Consumer<HttpServiceConfigurer> httpServiceConfigurerConsumer,
+				Consumer<CB> clientBuilderConsumer,
+				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer) {
+
 			HttpServiceGroup<CB> group = createGroup(baseUrl);
-			setGroup(group);
+			this.groups.add(group);
+
+			group.configureHttpServices(httpServiceConfigurerConsumer);
+			group.configureProxyFactory(proxyFactoryBuilderConsumer);
+			group.configureClient(clientBuilderConsumer);
+
 			return self();
 		}
 
 		protected abstract HttpServiceGroup<CB> createGroup(String baseUrl);
-
-		@Override
-		public Builder<B, CB> httpService(Class<?>... httpServiceTypes) {
-			this.group.addHttpService(httpServiceTypes);
-			return self();
-		}
-
-		@Override
-		public Builder<B, CB> configureClient(Consumer<CB> configurer) {
-			this.group.configureClient(configurer);
-			return self();
-		}
-
-		@Override
-		public Builder<B, CB> configureProxyFactory(Consumer<HttpServiceProxyFactory.Builder> configurer) {
-			this.group.configureProxyFactory(configurer);
-			return self();
-		}
 
 		@Override
 		public Builder<B, CB> apply(HttpServiceGroup.Configurer<CB> configurer) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2024 the original author or authors.
+ * Copyright 2002-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public interface HttpServiceGroup<CB> {
 
 	List<Class<?>> httpServices();
 
-	void addHttpService(Class<?>... httpServiceTypes);
+	void configureHttpServices(Consumer<HttpServiceConfigurer> httpServiceTypes);
 
 	void configureClient(Consumer<CB> configurer);
 
@@ -45,6 +45,7 @@ public interface HttpServiceGroup<CB> {
 
 
 	/**
+	 * Callback to configure an {@code HttpServiceGroup}.
 	 * @param <CB> the type of client builder (e.g. RestClient.Builder)
 	 */
 	interface Configurer<CB> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2024 the original author or authors.
+ * Copyright 2002-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
  *
  * @author Rossen Stoyanchev
  * @since 7.0
+ * @param <CB> the client builder type
  */
 public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<CB> {
 
@@ -42,6 +43,8 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 	private Consumer<HttpServiceProxyFactory.Builder> proxyFactoryConfigurer = builder -> {};
 
 	private final List<Class<?>> httpServiceTypes = new ArrayList<>();
+
+	private final HttpServiceConfigurer httpServiceConfigurer = new DefaultHttpServiceConfigurer();
 
 
 	protected AbstractHttpServiceGroup(String baseUrl, CB clientBuilder) {
@@ -61,8 +64,8 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 	}
 
 	@Override
-	public void addHttpService(Class<?>... httpServiceTypes) {
-		Collections.addAll(this.httpServiceTypes, httpServiceTypes);
+	public void configureHttpServices(Consumer<HttpServiceConfigurer> httpServicesConsumer) {
+		httpServicesConsumer.accept(this.httpServiceConfigurer);
 	}
 
 	@Override
@@ -90,5 +93,15 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 	}
 
 	protected abstract HttpExchangeAdapter createExchangeAdapter(CB clientBuilder);
+
+
+	private class DefaultHttpServiceConfigurer implements HttpServiceConfigurer {
+
+		@Override
+		public HttpServiceConfigurer addHttpServiceTypes(Class<?>... types) {
+			Collections.addAll(AbstractHttpServiceGroup.this.httpServiceTypes, types);
+			return this;
+		}
+	}
 
 }

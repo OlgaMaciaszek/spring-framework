@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2024 the original author or authors.
+ * Copyright 2002-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 /**
@@ -28,18 +29,16 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
  *
  * <p>To create an instance, see
  * {@link org.springframework.web.client.support.RestClientProxyRegistry}, or
- * {@link org.springframework.web.reactive.function.client.support.ReactiveProxyRegistry}.
+ * {@link org.springframework.web.reactive.function.client.support.WebClientProxyRegistry}.
  *
  * @author Rossen Stoyanchev
  * @since 7.0
  */
 public interface HttpServiceProxyRegistry {
 
-	@Nullable
-	<S> S getClient(Class<S> httpServiceType);
+	<S> @Nullable S getClient(Class<S> httpServiceType);
 
-	@Nullable
-	<S> S getClientForBaseUrl(String baseUrl, Class<S> httpServiceType);
+	<S> @Nullable S getClientForBaseUrl(String baseUrl, Class<S> httpServiceType);
 
 	Set<String> getBaseUrls();
 
@@ -53,13 +52,17 @@ public interface HttpServiceProxyRegistry {
 	 */
 	interface Builder<B extends Builder<B, CB>, CB> {
 
-		Builder<B, CB> group(String baseUrl);
+		default Builder<B, CB> addClient(String baseUrl,
+				Consumer<HttpServiceConfigurer> httpServiceConfigurer,
+				Consumer<CB> clientConfigurer) {
 
-		Builder<B, CB> httpService(Class<?>... httpServiceTypes);
+			return addClient(baseUrl, httpServiceConfigurer, clientConfigurer, builder -> {});
+		}
 
-		Builder<B, CB> configureClient(Consumer<CB> configurer);
-
-		Builder<B, CB> configureProxyFactory(Consumer<HttpServiceProxyFactory.Builder> configurer);
+		Builder<B, CB> addClient(String baseUrl,
+				Consumer<HttpServiceConfigurer> httpServiceConfigurerConsumer,
+				Consumer<CB> clientBuilderConsumer,
+				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer);
 
 		Builder<B, CB> apply(HttpServiceGroup.Configurer<CB> configurer);
 
