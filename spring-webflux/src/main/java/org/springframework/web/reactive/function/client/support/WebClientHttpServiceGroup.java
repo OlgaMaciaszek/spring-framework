@@ -32,10 +32,10 @@ public final class WebClientHttpServiceGroup extends AbstractHttpServiceGroup<We
 
 
 	private WebClientHttpServiceGroup(
-			String baseUrl, WebClient.Builder clientBuilder,
+			String baseUrl, String name, WebClient.Builder clientBuilder,
 			ClassPathScanningCandidateComponentProvider componentProvider) {
 
-		super(baseUrl, clientBuilder, componentProvider);
+		super(baseUrl, name, clientBuilder, componentProvider);
 		configureClient(builder -> builder.baseUrl(baseUrl));
 	}
 
@@ -48,10 +48,10 @@ public final class WebClientHttpServiceGroup extends AbstractHttpServiceGroup<We
 
 
 	public static WebClientHttpServiceGroup create(
-			String baseUrl, WebClient.Builder baseClientBuilder,
+			String baseUrl, String name, WebClient.Builder baseClientBuilder,
 			ClassPathScanningCandidateComponentProvider componentProvider) {
 
-		return new WebClientHttpServiceGroup(baseUrl, baseClientBuilder, componentProvider);
+		return new WebClientHttpServiceGroup(baseUrl, name, baseClientBuilder, componentProvider);
 	}
 
 

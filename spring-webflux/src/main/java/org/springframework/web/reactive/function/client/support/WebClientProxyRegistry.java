@@ -16,8 +16,10 @@
 
 package org.springframework.web.reactive.function.client.support;
 
-import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
+
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,6 +27,7 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import org.springframework.web.service.registry.AbstractHttpServiceProxyRegistry;
 import org.springframework.web.service.registry.HttpServiceConfigurer;
 import org.springframework.web.service.registry.HttpServiceGroup;
+import org.springframework.web.service.registry.HttpServiceProxyGroup;
 import org.springframework.web.service.registry.HttpServiceProxyRegistry;
 
 /**
@@ -36,8 +39,8 @@ import org.springframework.web.service.registry.HttpServiceProxyRegistry;
 public class WebClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
 
 
-	private WebClientProxyRegistry(Map<String, Map<Class<?>, Object>> registrations) {
-		super(registrations);
+	private WebClientProxyRegistry(Set<HttpServiceProxyGroup> proxyGroups) {
+		super(proxyGroups);
 	}
 
 
@@ -55,17 +58,19 @@ public class WebClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
 		}
 
 		@Override
-		protected WebClientHttpServiceGroup createGroup(String baseUrl) {
-			return WebClientHttpServiceGroup.create(baseUrl, this.baseClientBuilder, getComponentProvider());
+		protected WebClientHttpServiceGroup createGroup(String baseUrl, String name) {
+			return WebClientHttpServiceGroup.create(baseUrl, name, this.baseClientBuilder, getComponentProvider());
 		}
 
 		@Override
-		public Builder addClient(String baseUrl,
+		public Builder addClient(String baseUrl, @Nullable String name,
 				Consumer<HttpServiceConfigurer> httpServiceConfigurerConsumer,
 				Consumer<WebClient.Builder> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer) {
 
-			super.addClient(baseUrl, httpServiceConfigurerConsumer, clientBuilderConsumer, proxyFactoryBuilderConsumer);
+			super.addClient(baseUrl, name,
+					httpServiceConfigurerConsumer, clientBuilderConsumer, proxyFactoryBuilderConsumer);
+
 			return self();
 		}
 
@@ -85,8 +90,8 @@ public class WebClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
 		}
 
 		@Override
-		protected HttpServiceProxyRegistry initRegistry(Map<String, Map<Class<?>, Object>> registrations) {
-			return new WebClientProxyRegistry(registrations);
+		protected HttpServiceProxyRegistry initRegistry(Set<HttpServiceProxyGroup> proxyGroups) {
+			return new WebClientProxyRegistry(proxyGroups);
 		}
 	}
 

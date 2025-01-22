@@ -71,7 +71,7 @@ public class RestClientProxyRegistryTests {
 								builder -> builder.defaultHeader("Some-Header", "h1"))
 						.build();
 
-		GreetingService service = registry.getClientForBaseUrl(baseUrl, GreetingService.class);
+		GreetingService service = registry.getClient(baseUrl, GreetingService.class);
 
 		MockResponse response = new MockResponse();
 		response.setHeader("Content-Type", "text/plain").setBody("Hello!");
@@ -103,8 +103,8 @@ public class RestClientProxyRegistryTests {
 								builder -> builder.defaultHeader("Some-Header", "h2"))
 						.build();
 
-		GreetingService g1 = registry.getClientForBaseUrl(baseUrl1, GreetingService.class);
-		GreetingService g2 = registry.getClientForBaseUrl(baseUrl2, GreetingService.class);
+		GreetingService g1 = registry.getClient(baseUrl1, GreetingService.class);
+		GreetingService g2 = registry.getClient(baseUrl2, GreetingService.class);
 
 		MockResponse response = new MockResponse();
 		response.setHeader("Content-Type", "text/plain").setBody("Hello!");
@@ -144,8 +144,8 @@ public class RestClientProxyRegistryTests {
 
 		HttpServiceProxyRegistry registry = registryBuilder.build();
 
-		GreetingService g1 = registry.getClientForBaseUrl(baseUrl1, GreetingService.class);
-		GreetingService g2 = registry.getClientForBaseUrl(baseUrl2, GreetingService.class);
+		GreetingService g1 = registry.getClient(baseUrl1, GreetingService.class);
+		GreetingService g2 = registry.getClient(baseUrl2, GreetingService.class);
 
 		MockResponse response = new MockResponse();
 		response.setHeader("Content-Type", "text/plain").setBody("Hello!");

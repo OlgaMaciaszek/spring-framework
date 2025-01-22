@@ -17,11 +17,13 @@
 package org.springframework.web.service.registry;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
@@ -43,43 +45,44 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
  */
 public abstract class AbstractHttpServiceProxyRegistry implements HttpServiceProxyRegistry {
 
-	private final Map<String, Map<Class<?>, Object>> proxiesByBaseUrl;
+	private final Set<HttpServiceProxyGroup> proxyGroups;
 
-	private final MultiValueMap<Class<?>, Object> proxies = new LinkedMultiValueMap<>();
+	private final Map<String, HttpServiceProxyGroup> proxyGroupLookup = new LinkedHashMap<>();
+
+	private final MultiValueMap<Class<?>, Object> proxyTypeLookup = new LinkedMultiValueMap<>();
 
 
-	protected AbstractHttpServiceProxyRegistry(Map<String, Map<Class<?>, Object>> proxiesByBaseUrl) {
-		this.proxiesByBaseUrl = proxiesByBaseUrl;
-		proxiesByBaseUrl.forEach((baseUrl, proxies) -> proxies.forEach(this.proxies::add));
+	protected AbstractHttpServiceProxyRegistry(Set<HttpServiceProxyGroup> proxyGroups) {
+		this.proxyGroups = Collections.unmodifiableSet(proxyGroups);
+
+		proxyGroups.forEach(group -> {
+			this.proxyGroupLookup.put(group.name(), group);
+			group.proxies().forEach(this.proxyTypeLookup::add);
+		});
 	}
 
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <S> @Nullable S getClient(Class<S> httpServiceType) {
-		List<Object> proxies = this.proxies.get(httpServiceType);
+		List<Object> proxies = this.proxyTypeLookup.get(httpServiceType);
 		if (CollectionUtils.isEmpty(proxies)) {
 			return null;
 		}
-		Assert.state(proxies.size() == 1, () -> "More than one proxy for serviceType=" + httpServiceType);
+		Assert.isTrue(proxies.size() == 1, () -> "More than one proxy for serviceType=" + httpServiceType);
 		return (S) proxies.get(0);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <S> @Nullable S getClientForBaseUrl(String baseUrl, Class<S> httpServiceType) {
-		Map<Class<?>, Object> map = this.proxiesByBaseUrl.get(baseUrl);
-		return (map != null ? (S) map.get(httpServiceType) : null);
+	public <S> @Nullable S getClient(String name, Class<S> httpServiceType) {
+		HttpServiceProxyGroup group = this.proxyGroupLookup.get(name);
+		return (group != null ? (S) group.proxies().get(httpServiceType) : null);
 	}
 
 	@Override
-	public Set<String> getBaseUrls() {
-		return this.proxiesByBaseUrl.keySet();
-	}
-
-	@Override
-	public Map<Class<?>, Object> getClientClientsForBaseUrl(String baseUrl) {
-		return this.proxiesByBaseUrl.getOrDefault(baseUrl, new LinkedHashMap<>());
+	public Set<HttpServiceProxyGroup> getProxyGroups() {
+		return this.proxyGroups;
 	}
 
 
@@ -118,12 +121,14 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 		}
 
 		@Override
-		public Builder<B, CB> addClient(String baseUrl,
+		public Builder<B, CB> addClient(String baseUrl, @Nullable String name,
 				Consumer<HttpServiceConfigurer> httpServiceConfigurerConsumer,
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer) {
 
-			AbstractHttpServiceGroup<CB> group = createGroup(baseUrl);
+			name = (name != null ? name : baseUrl);
+
+			AbstractHttpServiceGroup<CB> group = createGroup(baseUrl, name);
 			this.groups.add(group);
 
 			group.configureHttpServices(httpServiceConfigurerConsumer);
@@ -133,7 +138,7 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 			return self();
 		}
 
-		protected abstract AbstractHttpServiceGroup<CB> createGroup(String baseUrl);
+		protected abstract AbstractHttpServiceGroup<CB> createGroup(String baseUrl, String name);
 
 		@Override
 		public Builder<B, CB> apply(HttpServiceGroup.Configurer<CB> configurer) {
@@ -143,21 +148,14 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 
 		@Override
 		public HttpServiceProxyRegistry build() {
-			Map<String, Map<Class<?>, Object>> result = new LinkedHashMap<>();
-			for (HttpServiceGroup<?> group : this.groups) {
-				String baseUrl = group.baseUrl();
-				Map<Class<?>, Object> proxies = result.computeIfAbsent(baseUrl, k -> new LinkedHashMap<>());
-				group.createProxies().forEach((type, proxy) -> {
-					Object previous = proxies.put(type, proxy);
-					Assert.state(previous == null, () ->
-							"More than one proxy for baseUrl='" + baseUrl + "' and serviceType=" + type);
-				});
-				result.put(baseUrl, proxies);
-			}
-			return initRegistry(result);
+
+			Set<HttpServiceProxyGroup> proxyGroups =
+					this.groups.stream().map(HttpServiceProxyGroup::create).collect(Collectors.toSet());
+
+			return initRegistry(proxyGroups);
 		}
 
-		protected abstract HttpServiceProxyRegistry initRegistry(Map<String, Map<Class<?>, Object>> registrations);
+		protected abstract HttpServiceProxyRegistry initRegistry(Set<HttpServiceProxyGroup> proxyGroups);
 
 		@SuppressWarnings("unchecked")
 		protected <T extends B> T self() {

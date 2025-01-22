@@ -16,8 +16,8 @@
 
 package org.springframework.web.service.registry;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
@@ -33,7 +33,9 @@ public interface HttpServiceGroup<CB> {
 
 	String baseUrl();
 
-	List<Class<?>> httpServices();
+	String name();
+
+	Set<Class<?>> httpServices();
 
 	void configureHttpServices(Consumer<HttpServiceConfigurer> httpServiceTypes);
 

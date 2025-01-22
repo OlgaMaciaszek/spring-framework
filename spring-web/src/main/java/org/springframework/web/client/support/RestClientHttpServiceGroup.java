@@ -32,10 +32,10 @@ public final class RestClientHttpServiceGroup extends AbstractHttpServiceGroup<R
 
 
 	private RestClientHttpServiceGroup(
-			String baseUrl, RestClient.Builder baseClientBuilder,
+			String baseUrl, String name, RestClient.Builder baseClientBuilder,
 			ClassPathScanningCandidateComponentProvider componentProvider) {
 
-		super(baseUrl, baseClientBuilder.clone(), componentProvider);
+		super(baseUrl, name, baseClientBuilder.clone(), componentProvider);
 		configureClient(builder -> builder.baseUrl(baseUrl));
 	}
 
@@ -48,10 +48,10 @@ public final class RestClientHttpServiceGroup extends AbstractHttpServiceGroup<R
 
 
 	public static RestClientHttpServiceGroup create(
-			String baseUrl, RestClient.Builder baseClientBuilder,
+			String baseUrl, String name, RestClient.Builder baseClientBuilder,
 			ClassPathScanningCandidateComponentProvider componentProvider) {
 
-		return new RestClientHttpServiceGroup(baseUrl, baseClientBuilder, componentProvider);
+		return new RestClientHttpServiceGroup(baseUrl, name, baseClientBuilder, componentProvider);
 	}
 
 

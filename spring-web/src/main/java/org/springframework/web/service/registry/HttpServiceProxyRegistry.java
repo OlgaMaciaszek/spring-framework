@@ -16,7 +16,6 @@
 
 package org.springframework.web.service.registry;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -38,13 +37,24 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
  */
 public interface HttpServiceProxyRegistry {
 
+	/**
+	 * Look up a proxy by HTTP Service type.
+	 * @throws IllegalArgumentException if there is more than one proxy of the
+	 * given type, e.g. under different HTTP Service groups.
+	 */
 	<S> @Nullable S getClient(Class<S> httpServiceType);
 
-	<S> @Nullable S getClientForBaseUrl(String baseUrl, Class<S> httpServiceType);
+	/**
+	 * Look up a proxy by qualifying the name of the HTTP Service group that the
+	 * proxy is associated with. When a name is not explicitly configured for
+	 * a group, by default it is initialized from the baseUrl.
+	 */
+	<S> @Nullable S getClient(String name, Class<S> httpServiceType);
 
-	Set<String> getBaseUrls();
-
-	Map<Class<?>, Object> getClientClientsForBaseUrl(String baseUrl);
+	/**
+	 * Return all HTTP Service groups and the proxies they contain.
+	 */
+	Set<HttpServiceProxyGroup> getProxyGroups();
 
 
 	/**
@@ -58,10 +68,10 @@ public interface HttpServiceProxyRegistry {
 				Consumer<HttpServiceConfigurer> httpServiceConfigurer,
 				Consumer<CB> clientConfigurer) {
 
-			return addClient(baseUrl, httpServiceConfigurer, clientConfigurer, builder -> {});
+			return addClient(baseUrl, null, httpServiceConfigurer, clientConfigurer, builder -> {});
 		}
 
-		Builder<B, CB> addClient(String baseUrl,
+		Builder<B, CB> addClient(String baseUrl, @Nullable String name,
 				Consumer<HttpServiceConfigurer> httpServiceConfigurerConsumer,
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer);

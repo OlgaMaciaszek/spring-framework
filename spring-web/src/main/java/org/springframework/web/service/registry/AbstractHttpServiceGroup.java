@@ -16,10 +16,11 @@
 
 package org.springframework.web.service.registry;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -47,19 +48,23 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 
 	private final String baseUrl;
 
+	private final String name;
+
 	private final CB clientBuilder;
 
 	private Consumer<HttpServiceProxyFactory.Builder> proxyFactoryConfigurer = builder -> {};
 
-	private final List<Class<?>> httpServiceTypes = new ArrayList<>();
+	private final Set<Class<?>> httpServiceTypes = new LinkedHashSet<>();
 
 	private final DefaultHttpServiceConfigurer httpServiceConfigurer;
 
 
 	protected AbstractHttpServiceGroup(
-			String baseUrl, CB clientBuilder, ClassPathScanningCandidateComponentProvider componentProvider) {
+			String baseUrl, String name, CB clientBuilder,
+			ClassPathScanningCandidateComponentProvider componentProvider) {
 
 		this.baseUrl = baseUrl;
+		this.name = name;
 		this.clientBuilder = clientBuilder;
 		this.httpServiceConfigurer = new DefaultHttpServiceConfigurer(componentProvider);
 	}
@@ -71,7 +76,12 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 	}
 
 	@Override
-	public List<Class<?>> httpServices() {
+	public String name() {
+		return this.name;
+	}
+
+	@Override
+	public Set<Class<?>> httpServices() {
 		return this.httpServiceTypes;
 	}
 
@@ -109,7 +119,7 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 
 	private class DefaultHttpServiceConfigurer implements HttpServiceConfigurer {
 
-		private ClassPathScanningCandidateComponentProvider componentProvider;
+		private final ClassPathScanningCandidateComponentProvider componentProvider;
 
 		public DefaultHttpServiceConfigurer(ClassPathScanningCandidateComponentProvider componentProvider) {
 			this.componentProvider = componentProvider;
