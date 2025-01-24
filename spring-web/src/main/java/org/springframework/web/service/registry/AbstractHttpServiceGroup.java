@@ -155,6 +155,22 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 
 			return this;
 		}
+
+		@Override
+		public HttpServiceConfigurer discoverServiceTypes(String[] basePackages, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters) {
+			for (String basePackage : basePackages) {
+				discoverServiceTypes(basePackage, includeFilters, excludeFilters);
+			}
+			return this;
+		}
+
+		@Override
+		public HttpServiceConfigurer discoverServiceTypes(Class<?>[] basePackages, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters) {
+			for (Class<?> basePackage : basePackages) {
+				discoverServiceTypes(basePackage, includeFilters, excludeFilters);
+			}
+			return this;
+		}
 	}
 
 }

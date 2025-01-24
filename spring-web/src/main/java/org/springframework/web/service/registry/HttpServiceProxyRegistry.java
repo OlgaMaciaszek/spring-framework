@@ -16,6 +16,7 @@
 
 package org.springframework.web.service.registry;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -73,6 +74,10 @@ public interface HttpServiceProxyRegistry {
 
 		Builder<B, CB> addClient(String baseUrl, @Nullable String name,
 				Consumer<HttpServiceConfigurer> httpServiceConfigurerConsumer,
+				Consumer<CB> clientBuilderConsumer,
+				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer);
+
+		Builder<B, CB> discoverAndAddClients(List<String> basePackages,
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer);
 

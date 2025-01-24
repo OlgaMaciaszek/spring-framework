@@ -16,8 +16,10 @@
 
 package org.springframework.web.service.registry;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,14 +29,21 @@ import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 /**
@@ -141,6 +150,32 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 		protected abstract AbstractHttpServiceGroup<CB> createGroup(String baseUrl, String name);
 
 		@Override
+		public Builder<B, CB> discoverAndAddClients(List<String> basePackages,
+				Consumer<CB> clientBuilderConsumer,
+				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer) {
+			Set<InterfaceClientData> interfaceClientData = discoverClients(basePackages);
+			for (InterfaceClientData clientData : interfaceClientData) {
+				if (clientData.httpServiceTypes.length != 0) {
+					addClient(clientData.value(), clientData.name(),
+							httpServiceConfigurer -> httpServiceConfigurer
+									.addServiceTypes(clientData.httpServiceTypes()),
+							clientBuilderConsumer, proxyFactoryBuilderConsumer);
+				}
+				else {
+					addClient(clientData.value(), clientData.name(),
+							httpServiceConfigurer -> httpServiceConfigurer
+									.discoverServiceTypes(getBasePackages(clientData),
+											Collections.singletonList(new AnnotationTypeFilter(InterfaceClient.class)),
+											Collections.emptyList())
+									.addServiceTypes(clientData.httpServiceTypes()),
+							clientBuilderConsumer, proxyFactoryBuilderConsumer);
+				}
+
+			}
+			return this;
+		}
+
+		@Override
 		public Builder<B, CB> apply(HttpServiceGroup.Configurer<CB> configurer) {
 			this.groups.forEach(configurer::configure);
 			return self();
@@ -161,6 +196,58 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 		protected <T extends B> T self() {
 			return (T) this;
 		}
+
+		private Set<InterfaceClientData> discoverClients(List<String> basePackages) {
+			Set<BeanDefinition> annotationConfigClasses = discoverAnnotatedConfigurationClasses(basePackages);
+			Set<InterfaceClientData> interfaceClientData = new HashSet<>();
+			for (BeanDefinition annotationConfigClass : annotationConfigClasses) {
+				if (annotationConfigClass instanceof AnnotatedBeanDefinition beanDefinition) {
+					AnnotationMetadata annotatedBeanMetadata = beanDefinition.getMetadata();
+					MergedAnnotation<? extends Annotation> annotation = annotatedBeanMetadata.getAnnotations()
+							.get(InterfaceClient.class);
+					interfaceClientData.add(new InterfaceClientData(annotation.getString(MergedAnnotation.VALUE),
+							annotation.getString("name"),
+							annotation.getStringArray("basePackages"),
+							annotation.getClassArray("basePackageClasses"),
+							annotation.getClassArray("clients"),
+							annotatedBeanMetadata.getClassName()));
+				}
+			}
+			return interfaceClientData;
+		}
+
+		private Set<BeanDefinition> discoverAnnotatedConfigurationClasses(List<String> basePackages) {
+			Set<BeanDefinition> annotationConfigClasses = new HashSet<>();
+			ClassPathScanningCandidateComponentProvider componentProvider = getComponentProvider();
+			componentProvider.setResourceLoader(this.resourceLoader);
+			componentProvider.addIncludeFilter(new AnnotationTypeFilter(InterfaceClient.class));
+			for (String basePackage : basePackages) {
+				annotationConfigClasses.addAll(componentProvider.findCandidateComponents(basePackage));
+			}
+			return annotationConfigClasses;
+		}
+
+		protected String[] getBasePackages(InterfaceClientData clientData) {
+			Set<String> basePackages = new HashSet<>();
+			for (String pkg : clientData.basePackages()) {
+				if (StringUtils.hasText(pkg)) {
+					basePackages.add(pkg);
+				}
+			}
+			for (Class<?> clazz : clientData.basePackageClasses()) {
+				basePackages.add(ClassUtils.getPackageName(clazz));
+			}
+
+			if (basePackages.isEmpty()) {
+				basePackages.add(ClassUtils.getPackageName(clientData.importingClassName()));
+			}
+			return basePackages.toArray(String[]::new);
+		}
+
+		record InterfaceClientData(String value, String name, String[] basePackages,
+								   Class<?>[] basePackageClasses,
+								   Class<?>[] httpServiceTypes,
+								   String importingClassName) { }
 	}
 
 }

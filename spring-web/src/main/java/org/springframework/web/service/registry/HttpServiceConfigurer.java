@@ -39,4 +39,10 @@ public interface HttpServiceConfigurer {
 		return discoverServiceTypes(basePackageClass.getName(), includeFilters, excludeFilters);
 	}
 
+	HttpServiceConfigurer discoverServiceTypes(
+			String[] basePackages, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters);
+
+	HttpServiceConfigurer discoverServiceTypes(
+			Class<?>[] basePackages, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters);
+
 }
