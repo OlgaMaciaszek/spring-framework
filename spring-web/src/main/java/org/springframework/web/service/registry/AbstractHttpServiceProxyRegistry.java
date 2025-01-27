@@ -123,7 +123,14 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 		protected ClassPathScanningCandidateComponentProvider getComponentProvider() {
 			if (this.componentProvider == null) {
 				this.environment = (this.environment != null ? this.environment : new StandardEnvironment());
-				this.componentProvider = new ClassPathScanningCandidateComponentProvider(false, this.environment);
+				// Do not ignore interfaces while scanning
+				this.componentProvider = new ClassPathScanningCandidateComponentProvider(false, this.environment) {
+					@Override
+					protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
+						AnnotationMetadata metadata = beanDefinition.getMetadata();
+						return metadata.isIndependent() && !metadata.isAnnotation();
+					}
+				};
 				this.componentProvider.setResourceLoader(this.resourceLoader);
 			}
 			return this.componentProvider;
@@ -164,8 +171,7 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 				else {
 					addClient(clientData.value(), clientData.name(),
 							httpServiceConfigurer -> httpServiceConfigurer
-									.discoverServiceTypes(getBasePackages(clientData))
-									.addServiceTypes(clientData.httpServiceTypes()),
+									.discoverServiceTypes(getBasePackages(clientData)),
 							clientBuilderConsumer, proxyFactoryBuilderConsumer);
 				}
 
@@ -216,7 +222,10 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 
 		private Set<BeanDefinition> discoverAnnotatedConfigurationClasses(List<String> basePackages) {
 			Set<BeanDefinition> annotationConfigClasses = new HashSet<>();
-			ClassPathScanningCandidateComponentProvider componentProvider = getComponentProvider();
+			Environment environment = this.environment != null ? this.environment : new StandardEnvironment();
+			ClassPathScanningCandidateComponentProvider componentProvider =
+					new ClassPathScanningCandidateComponentProvider(false, environment);
+			componentProvider.setResourceLoader(this.resourceLoader);
 			componentProvider.setResourceLoader(this.resourceLoader);
 			componentProvider.addIncludeFilter(new AnnotationTypeFilter(InterfaceClient.class));
 			for (String basePackage : basePackages) {
