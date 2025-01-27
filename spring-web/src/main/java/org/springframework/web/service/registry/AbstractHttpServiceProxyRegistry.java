@@ -164,9 +164,7 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 				else {
 					addClient(clientData.value(), clientData.name(),
 							httpServiceConfigurer -> httpServiceConfigurer
-									.discoverServiceTypes(getBasePackages(clientData),
-											Collections.singletonList(new AnnotationTypeFilter(InterfaceClient.class)),
-											Collections.emptyList())
+									.discoverServiceTypes(getBasePackages(clientData))
 									.addServiceTypes(clientData.httpServiceTypes()),
 							clientBuilderConsumer, proxyFactoryBuilderConsumer);
 				}
@@ -209,7 +207,7 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 							annotation.getString("name"),
 							annotation.getStringArray("basePackages"),
 							annotation.getClassArray("basePackageClasses"),
-							annotation.getClassArray("clients"),
+							annotation.getClassArray("httpServiceTypes"),
 							annotatedBeanMetadata.getClassName()));
 				}
 			}

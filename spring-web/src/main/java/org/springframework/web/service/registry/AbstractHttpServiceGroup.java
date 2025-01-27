@@ -16,6 +16,7 @@
 
 package org.springframework.web.service.registry;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -135,8 +136,10 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 		public HttpServiceConfigurer discoverServiceTypes(
 				String basePackage, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters) {
 
-			includeFilters.add(httpExchangeAnnotationFilter);
-			includeFilters.forEach(this.componentProvider::addIncludeFilter);
+			// Handle user passing `Collections.singletonList()`, etc.
+			List<TypeFilter> includeList = new ArrayList<>(includeFilters);
+			includeList.add(httpExchangeAnnotationFilter);
+			includeList.forEach(this.componentProvider::addIncludeFilter);
 			excludeFilters.forEach(this.componentProvider::addExcludeFilter);
 
 			this.componentProvider.findCandidateComponents(basePackage).forEach(definition -> {

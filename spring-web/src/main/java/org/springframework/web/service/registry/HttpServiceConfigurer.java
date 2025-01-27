@@ -16,6 +16,7 @@
 
 package org.springframework.web.service.registry;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.core.type.filter.TypeFilter;
@@ -44,5 +45,14 @@ public interface HttpServiceConfigurer {
 
 	HttpServiceConfigurer discoverServiceTypes(
 			Class<?>[] basePackages, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters);
+
+	default HttpServiceConfigurer discoverServiceTypes(String[] basePackages) {
+		return discoverServiceTypes(basePackages, Collections.emptyList(), Collections.emptyList());
+	}
+
+	default HttpServiceConfigurer discoverServiceTypes(Class<?>[] basePackages) {
+		return discoverServiceTypes(basePackages);
+	}
+
 
 }
