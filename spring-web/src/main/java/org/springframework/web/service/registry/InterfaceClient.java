@@ -18,6 +18,7 @@ package org.springframework.web.service.registry;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -28,12 +29,13 @@ import java.lang.annotation.Target;
  * to add or adds the directly provided interfaces to the client.
  *
  * @author Olga Maciaszek-Sharma
- * @since 4.0.0
+ * @since 7.0
  * TODO: * should the name be general like the current one or `EnableHttpInterfaceClient`?
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
+@Repeatable(InterfaceClients.class)
 public @interface InterfaceClient {
 
 	/**
