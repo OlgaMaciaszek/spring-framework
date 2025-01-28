@@ -59,7 +59,7 @@ public class RestClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
 		@Override
 		protected RestClientHttpServiceGroup createGroup(String baseUrl, String name) {
 			return RestClientHttpServiceGroup.create(
-					baseUrl, baseUrl, this.baseClientBuilder, getComponentProvider());
+					baseUrl, name, this.baseClientBuilder, getComponentProvider());
 		}
 
 		@Override
