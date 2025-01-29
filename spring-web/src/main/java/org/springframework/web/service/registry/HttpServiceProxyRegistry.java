@@ -77,7 +77,10 @@ public interface HttpServiceProxyRegistry {
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer);
 
-		Builder<B, CB> discoverAndAddClients(List<String> basePackages,
+		// TODO: move out of the builder
+		Set<InterfaceClientData> discoverClients(List<String> basePackages);
+
+		Builder<B, CB> addClient(InterfaceClientData interfaceClientData,
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer);
 

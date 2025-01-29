@@ -162,25 +162,23 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 		protected abstract AbstractHttpServiceGroup<CB> createGroup(String baseUrl, String name);
 
 		@Override
-		public Builder<B, CB> discoverAndAddClients(List<String> basePackages,
+		public Builder<B, CB> addClient(InterfaceClientData interfaceClientData,
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer) {
-			Set<InterfaceClientData> interfaceClientData = discoverClients(basePackages);
-			for (InterfaceClientData clientData : interfaceClientData) {
-				if (clientData.httpServiceTypes.length != 0) {
-					addClient(clientData.value(), clientData.name(),
+
+				if (interfaceClientData.httpServiceTypes().length != 0) {
+					addClient(interfaceClientData.value(), interfaceClientData.name(),
 							httpServiceConfigurer -> httpServiceConfigurer
-									.addServiceTypes(clientData.httpServiceTypes()),
+									.addServiceTypes(interfaceClientData.httpServiceTypes()),
 							clientBuilderConsumer, proxyFactoryBuilderConsumer);
 				}
 				else {
-					addClient(clientData.value(), clientData.name(),
+					addClient(interfaceClientData.value(), interfaceClientData.name(),
 							httpServiceConfigurer -> httpServiceConfigurer
-									.discoverServiceTypes(getBasePackages(clientData)),
+									.discoverServiceTypes(getBasePackages(interfaceClientData)),
 							clientBuilderConsumer, proxyFactoryBuilderConsumer);
 				}
 
-			}
 			return this;
 		}
 
@@ -206,7 +204,9 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 			return (T) this;
 		}
 
-		private Set<InterfaceClientData> discoverClients(List<String> basePackages) {
+		// TODO: move out of the builder
+		@Override
+		public Set<InterfaceClientData> discoverClients(List<String> basePackages) {
 			Set<BeanDefinition> annotationConfigClasses = discoverAnnotatedConfigurationClasses(basePackages);
 			Set<InterfaceClientData> interfaceClientData = new HashSet<>();
 			for (BeanDefinition annotationConfigClass : annotationConfigClasses) {
@@ -255,11 +255,6 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 			}
 			return basePackages.toArray(String[]::new);
 		}
-
-		record InterfaceClientData(String value, String name, String[] basePackages,
-								   Class<?>[] basePackageClasses,
-								   Class<?>[] httpServiceTypes,
-								   String importingClassName) { }
 	}
 
 }
