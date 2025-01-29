@@ -142,9 +142,14 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer) {
 
-			name = (name != null ? name : baseUrl);
+			String actualName = (name != null ? name : baseUrl);
 
-			AbstractHttpServiceGroup<CB> group = createGroup(baseUrl, name);
+			AbstractHttpServiceGroup<CB> group = createGroup(baseUrl, actualName);
+
+			// Avoid failing silently if the user adds two groups under same name
+			if(this.groups.contains(group)) {
+				throw new IllegalArgumentException("Can only create one group with a given name.");
+			}
 			this.groups.add(group);
 
 			group.configureHttpServices(httpServiceConfigurerConsumer);

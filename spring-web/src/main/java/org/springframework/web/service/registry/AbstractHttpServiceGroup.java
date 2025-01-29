@@ -176,4 +176,16 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 		}
 	}
 
+	@Override
+	public boolean equals(Object other) {
+		return (other != null && getClass() == other.getClass() &&
+				this.name.equals(((AbstractHttpServiceGroup<?>) other).name));
+	}
+
+	@Override
+	public int hashCode() {
+		return this.name.hashCode();
+	}
+
+
 }
