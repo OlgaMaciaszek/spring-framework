@@ -163,20 +163,19 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 
 		@Override
 		public Builder<B, CB> addClient(InterfaceClientData interfaceClientData,
-				Consumer<CB> clientBuilderConsumer,
-				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer) {
+				Consumer<CB> clientBuilderConsumer) {
 
 				if (interfaceClientData.httpServiceTypes().length != 0) {
 					addClient(interfaceClientData.value(), interfaceClientData.name(),
 							httpServiceConfigurer -> httpServiceConfigurer
 									.addServiceTypes(interfaceClientData.httpServiceTypes()),
-							clientBuilderConsumer, proxyFactoryBuilderConsumer);
+							clientBuilderConsumer, proxyFactoryBuilder -> {});
 				}
 				else {
 					addClient(interfaceClientData.value(), interfaceClientData.name(),
 							httpServiceConfigurer -> httpServiceConfigurer
 									.discoverServiceTypes(getBasePackages(interfaceClientData)),
-							clientBuilderConsumer, proxyFactoryBuilderConsumer);
+							clientBuilderConsumer, proxyFactoryBuilder -> {});
 				}
 
 			return this;

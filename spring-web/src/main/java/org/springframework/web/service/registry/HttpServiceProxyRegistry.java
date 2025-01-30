@@ -81,8 +81,7 @@ public interface HttpServiceProxyRegistry {
 		Set<InterfaceClientData> discoverClients(List<String> basePackages);
 
 		Builder<B, CB> addClient(InterfaceClientData interfaceClientData,
-				Consumer<CB> clientBuilderConsumer,
-				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer);
+				Consumer<CB> clientBuilderConsumer);
 
 		Builder<B, CB> apply(HttpServiceGroup.Configurer<CB> configurer);
 
