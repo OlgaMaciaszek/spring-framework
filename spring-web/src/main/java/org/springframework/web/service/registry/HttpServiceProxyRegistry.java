@@ -55,7 +55,7 @@ public interface HttpServiceProxyRegistry {
 	/**
 	 * Return all HTTP Service groups and the proxies they contain.
 	 */
-	Set<HttpServiceProxyGroup> getProxyGroups();
+	Set<HttpServiceGroup> getProxyGroups();
 
 
 	/**

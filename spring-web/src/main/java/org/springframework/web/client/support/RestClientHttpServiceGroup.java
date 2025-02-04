@@ -36,7 +36,7 @@ public final class RestClientHttpServiceGroup extends AbstractHttpServiceGroup<R
 			ClassPathScanningCandidateComponentProvider componentProvider) {
 
 		super(baseUrl, name, baseClientBuilder.clone(), componentProvider);
-		configureClient(builder -> builder.baseUrl(baseUrl));
+//		configureClient(builder -> builder.baseUrl(baseUrl));
 	}
 
 

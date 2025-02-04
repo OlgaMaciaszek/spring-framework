@@ -26,6 +26,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.Nullable;
+
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
@@ -58,6 +60,10 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 	private final Set<Class<?>> httpServiceTypes = new LinkedHashSet<>();
 
 	private final DefaultHttpServiceConfigurer httpServiceConfigurer;
+
+	private Map<Class<?>, Object> proxies;
+
+	private Consumer<CB> clientBuilderConfigurer;
 
 
 	protected AbstractHttpServiceGroup(
@@ -102,19 +108,28 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 	}
 
 	@Override
+	public @Nullable Map<Class<?>, Object> proxies() {
+		return this.proxies;
+	}
+
+	// TODO: remove
+	@Override
 	public Map<Class<?>, Object> createProxies() {
 		HttpServiceProxyFactory proxyFactory = initProxyFactory();
 		return this.httpServiceTypes.stream()
 				.collect(Collectors.toMap(Function.identity(), proxyFactory::createClient));
 	}
 
+	// TODO: remove
 	private HttpServiceProxyFactory initProxyFactory() {
 		HttpExchangeAdapter adapter = createExchangeAdapter(this.clientBuilder);
 		HttpServiceProxyFactory.Builder proxyFactoryBuilder = HttpServiceProxyFactory.builderFor(adapter);
 		this.proxyFactoryConfigurer.accept(proxyFactoryBuilder);
+		this.clientBuilderConfigurer.accept(this.clientBuilder);
 		return proxyFactoryBuilder.build();
 	}
 
+	// TODO: remove
 	protected abstract HttpExchangeAdapter createExchangeAdapter(CB clientBuilder);
 
 
