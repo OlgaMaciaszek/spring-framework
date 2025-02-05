@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -53,18 +53,18 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 
 	private final String name;
 
+	private final Set<Class<?>> httpServiceTypes = new LinkedHashSet<>();
+
 	private final CB clientBuilder;
 
 	private Consumer<HttpServiceProxyFactory.Builder> proxyFactoryConfigurer = builder -> {};
 
-	private final Set<Class<?>> httpServiceTypes = new LinkedHashSet<>();
+	private Consumer<CB> clientBuilderConfigurer = builder -> {
+	};
 
 	private final DefaultHttpServiceConfigurer httpServiceConfigurer;
 
-	private Map<Class<?>, Object> proxies;
-
-	private Consumer<CB> clientBuilderConfigurer;
-
+	private @Nullable Map<Class<?>, Object> proxies;
 
 	protected AbstractHttpServiceGroup(
 			String baseUrl, String name, CB clientBuilder,
@@ -99,7 +99,7 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 
 	@Override
 	public void configureClient(Consumer<CB> configurer) {
-		configurer.accept(this.clientBuilder);
+		this.clientBuilderConfigurer = this.clientBuilderConfigurer.andThen(configurer);
 	}
 
 	@Override
@@ -108,13 +108,15 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 	}
 
 	@Override
-	public @Nullable Map<Class<?>, Object> proxies() {
+	public Map<Class<?>, Object> proxies() {
+		if (this.proxies == null) {
+			this.proxies = createProxies();
+		}
 		return this.proxies;
 	}
 
-	// TODO: remove
-	@Override
-	public Map<Class<?>, Object> createProxies() {
+
+	private Map<Class<?>, Object> createProxies() {
 		HttpServiceProxyFactory proxyFactory = initProxyFactory();
 		return this.httpServiceTypes.stream()
 				.collect(Collectors.toMap(Function.identity(), proxyFactory::createClient));

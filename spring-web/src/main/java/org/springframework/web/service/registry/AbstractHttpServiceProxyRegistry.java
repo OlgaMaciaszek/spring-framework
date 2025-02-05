@@ -50,26 +50,28 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
  * @author Rossen Stoyanchev
  * @since 7.0
  */
-public abstract class AbstractHttpServiceProxyRegistry implements HttpServiceProxyRegistry {
+public abstract class AbstractHttpServiceProxyRegistry<CB> implements HttpServiceProxyRegistry {
 
 	// TODO: fix generics
-	private final Set<HttpServiceGroup> proxyGroups;
+	private final Set<HttpServiceGroup<?>> proxyGroups;
 
-	private final Map<String, HttpServiceGroup> proxyGroupLookup = new LinkedHashMap<>();
+	private final Map<String, HttpServiceGroup<?>> proxyGroupLookup = new LinkedHashMap<>();
 
 	private final MultiValueMap<Class<?>, Object> proxyTypeLookup = new LinkedMultiValueMap<>();
 
 
-	protected AbstractHttpServiceProxyRegistry(Set<HttpServiceGroup> proxyGroups) {
+	protected AbstractHttpServiceProxyRegistry(Set<HttpServiceGroup<CB>> proxyGroups) {
 		this.proxyGroups = Collections.unmodifiableSet(proxyGroups);
 
 		proxyGroups.forEach(group -> {
 			this.proxyGroupLookup.put(group.name(), group);
+			// TODO
 //			group.proxies().forEach(this.proxyTypeLookup::add);
 		});
 	}
 
 
+	// FIXME
 	@SuppressWarnings("unchecked")
 	@Override
 	public <S> @Nullable S getClient(Class<S> httpServiceType) {
@@ -84,17 +86,15 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 	@SuppressWarnings("unchecked")
 	@Override
 	public <S> @Nullable S getClient(String name, Class<S> httpServiceType) {
-		HttpServiceGroup group = this.proxyGroupLookup.get(name);
+		HttpServiceGroup<?> group = this.proxyGroupLookup.get(name);
 		if (group == null) {
 			return null;
 		}
-		Map<Class<?>, Object> groupProxies = group.proxies();
-		return groupProxies != null ? (S) groupProxies.get(httpServiceType) :
-				(S) group.createProxies().get(httpServiceType);
+		return (S) group.proxies().get(httpServiceType);
 	}
 
 	@Override
-	public Set<HttpServiceGroup> getProxyGroups() {
+	public Set<HttpServiceGroup<?>> getProxyGroups() {
 		return this.proxyGroups;
 	}
 
@@ -106,7 +106,7 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 	 */
 	protected abstract static class AbstractBuilder<B extends AbstractBuilder<B, CB>, CB> implements Builder<B, CB> {
 
-		private final Set<HttpServiceGroup> groups = new HashSet<>();
+		private final Set<HttpServiceGroup<CB>> groups = new HashSet<>();
 
 		private @Nullable Environment environment;
 
@@ -157,6 +157,8 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 			this.groups.add(group);
 
 			group.configureHttpServices(httpServiceConfigurerConsumer);
+			group.configureProxyFactory(proxyFactoryBuilderConsumer);
+			group.configureClient(clientBuilderConsumer);
 
 			return self();
 		}
@@ -200,7 +202,7 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 		}
 
 		//FIXME
-		protected abstract HttpServiceProxyRegistry initRegistry(Set<HttpServiceGroup> proxyGroups);
+		protected abstract HttpServiceProxyRegistry initRegistry(Set<HttpServiceGroup<CB>> proxyGroups);
 
 		@SuppressWarnings("unchecked")
 		protected <T extends B> T self() {

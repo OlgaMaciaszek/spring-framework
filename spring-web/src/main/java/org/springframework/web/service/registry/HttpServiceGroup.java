@@ -22,8 +22,6 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import jakarta.validation.constraints.Null;
-
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 /**
@@ -47,11 +45,7 @@ public interface HttpServiceGroup<CB> {
 
 	void configureProxyFactory(Consumer<HttpServiceProxyFactory.Builder> configurer);
 
-	Map<Class<?>, Object> createProxies();
-
-	@Nullable
 	Map<Class<?>, Object> proxies();
-
 
 	/**
 	 * Callback to configure an {@code HttpServiceGroup}.

@@ -34,10 +34,9 @@ import org.springframework.web.service.registry.HttpServiceProxyRegistry;
  * @author Rossen Stoyanchev
  * @since 7.0
  */
-public class RestClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
+public class RestClientProxyRegistry extends AbstractHttpServiceProxyRegistry<RestClient.Builder> {
 
-	// TODO: fix generics
-	protected RestClientProxyRegistry(Set<HttpServiceGroup> proxyGroups) {
+	protected RestClientProxyRegistry(Set<HttpServiceGroup<RestClient.Builder>> proxyGroups) {
 		super(proxyGroups);
 	}
 
@@ -89,7 +88,7 @@ public class RestClientProxyRegistry extends AbstractHttpServiceProxyRegistry {
 		}
 
 		@Override
-		protected HttpServiceProxyRegistry initRegistry(Set<HttpServiceGroup> proxyGroups) {
+		protected HttpServiceProxyRegistry initRegistry(Set<HttpServiceGroup<RestClient.Builder>> proxyGroups) {
 			return new RestClientProxyRegistry(proxyGroups);
 		}
 	}
