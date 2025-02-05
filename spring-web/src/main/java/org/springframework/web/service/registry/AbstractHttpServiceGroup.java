@@ -122,16 +122,14 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 				.collect(Collectors.toMap(Function.identity(), proxyFactory::createClient));
 	}
 
-	// TODO: remove
 	private HttpServiceProxyFactory initProxyFactory() {
+		this.clientBuilderConfigurer.accept(this.clientBuilder);
 		HttpExchangeAdapter adapter = createExchangeAdapter(this.clientBuilder);
 		HttpServiceProxyFactory.Builder proxyFactoryBuilder = HttpServiceProxyFactory.builderFor(adapter);
 		this.proxyFactoryConfigurer.accept(proxyFactoryBuilder);
-		this.clientBuilderConfigurer.accept(this.clientBuilder);
 		return proxyFactoryBuilder.build();
 	}
 
-	// TODO: remove
 	protected abstract HttpExchangeAdapter createExchangeAdapter(CB clientBuilder);
 
 

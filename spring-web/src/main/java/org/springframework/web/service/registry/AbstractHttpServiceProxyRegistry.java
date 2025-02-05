@@ -17,6 +17,7 @@
 package org.springframework.web.service.registry;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
@@ -52,7 +54,6 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
  */
 public abstract class AbstractHttpServiceProxyRegistry<CB> implements HttpServiceProxyRegistry {
 
-	// TODO: fix generics
 	private final Set<HttpServiceGroup<?>> proxyGroups;
 
 	private final Map<String, HttpServiceGroup<?>> proxyGroupLookup = new LinkedHashMap<>();
@@ -65,17 +66,14 @@ public abstract class AbstractHttpServiceProxyRegistry<CB> implements HttpServic
 
 		proxyGroups.forEach(group -> {
 			this.proxyGroupLookup.put(group.name(), group);
-			// TODO
-//			group.proxies().forEach(this.proxyTypeLookup::add);
 		});
 	}
 
-
-	// FIXME
 	@SuppressWarnings("unchecked")
 	@Override
 	public <S> @Nullable S getClient(Class<S> httpServiceType) {
-		List<Object> proxies = this.proxyTypeLookup.get(httpServiceType);
+		List<Object> proxies = this.proxyTypeLookup
+				.computeIfAbsent(httpServiceType, this::getProxies);
 		if (CollectionUtils.isEmpty(proxies)) {
 			return null;
 		}
@@ -96,6 +94,16 @@ public abstract class AbstractHttpServiceProxyRegistry<CB> implements HttpServic
 	@Override
 	public Set<HttpServiceGroup<?>> getProxyGroups() {
 		return this.proxyGroups;
+	}
+
+
+	private <S> List<Object> getProxies(Class<S> httpServiceType) {
+		return getProxyGroups().stream()
+				.map(proxyGroup -> proxyGroup.proxies().entrySet())
+				.flatMap(Collection::stream)
+				.filter(entry -> entry.getKey().equals(httpServiceType))
+				.map(Map.Entry::getValue)
+				.toList();
 	}
 
 
