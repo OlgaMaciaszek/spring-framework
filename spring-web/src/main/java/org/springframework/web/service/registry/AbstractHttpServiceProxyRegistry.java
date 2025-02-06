@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 
@@ -177,18 +176,20 @@ public abstract class AbstractHttpServiceProxyRegistry<CB> implements HttpServic
 		public Builder<B, CB> addClient(InterfaceClientData interfaceClientData,
 				Consumer<CB> clientBuilderConsumer) {
 
-				if (interfaceClientData.httpServiceTypes().length != 0) {
-					addClient(interfaceClientData.value(), interfaceClientData.name(),
-							httpServiceConfigurer -> httpServiceConfigurer
-									.addServiceTypes(interfaceClientData.httpServiceTypes()),
-							clientBuilderConsumer, proxyFactoryBuilder -> {});
-				}
-				else {
-					addClient(interfaceClientData.value(), interfaceClientData.name(),
-							httpServiceConfigurer -> httpServiceConfigurer
-									.discoverServiceTypes(getBasePackages(interfaceClientData)),
-							clientBuilderConsumer, proxyFactoryBuilder -> {});
-				}
+			if (interfaceClientData.httpServiceTypes().length != 0) {
+				addClient(interfaceClientData.value(), interfaceClientData.name(),
+						httpServiceConfigurer -> httpServiceConfigurer
+								.addServiceTypes(interfaceClientData.httpServiceTypes()),
+						clientBuilderConsumer, proxyFactoryBuilder -> {
+						});
+			}
+			else {
+				addClient(interfaceClientData.value(), interfaceClientData.name(),
+						httpServiceConfigurer -> httpServiceConfigurer
+								.discoverServiceTypes(getBasePackages(interfaceClientData)),
+						clientBuilderConsumer, proxyFactoryBuilder -> {
+						});
+			}
 
 			return this;
 		}
@@ -201,15 +202,9 @@ public abstract class AbstractHttpServiceProxyRegistry<CB> implements HttpServic
 
 		@Override
 		public HttpServiceProxyRegistry build() {
-
-			// FIXME
-//			Set<HttpServiceProxyGroup> proxyGroups =
-//					this.groups.stream().map(HttpServiceProxyGroup::create).collect(Collectors.toSet());
-
 			return initRegistry(this.groups);
 		}
 
-		//FIXME
 		protected abstract HttpServiceProxyRegistry initRegistry(Set<HttpServiceGroup<CB>> proxyGroups);
 
 		@SuppressWarnings("unchecked")
@@ -217,7 +212,7 @@ public abstract class AbstractHttpServiceProxyRegistry<CB> implements HttpServic
 			return (T) this;
 		}
 
-		// TODO: move out of the builder
+		// TODO: move out of the builder?
 		@Override
 		public Set<InterfaceClientData> discoverClients(List<String> basePackages) {
 			Set<BeanDefinition> annotationConfigClasses = discoverAnnotatedConfigurationClasses(basePackages);

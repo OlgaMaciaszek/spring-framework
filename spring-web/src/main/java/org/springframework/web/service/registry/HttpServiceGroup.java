@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.annotation.Nullable;
-
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 /**

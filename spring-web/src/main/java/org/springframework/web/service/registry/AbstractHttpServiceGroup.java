@@ -57,7 +57,8 @@ public abstract class AbstractHttpServiceGroup<CB> implements HttpServiceGroup<C
 
 	private final CB clientBuilder;
 
-	private Consumer<HttpServiceProxyFactory.Builder> proxyFactoryConfigurer = builder -> {};
+	private Consumer<HttpServiceProxyFactory.Builder> proxyFactoryConfigurer = builder -> {
+	};
 
 	private Consumer<CB> clientBuilderConfigurer = builder -> {
 	};
