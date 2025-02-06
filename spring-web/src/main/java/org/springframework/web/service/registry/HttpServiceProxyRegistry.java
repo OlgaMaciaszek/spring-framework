@@ -77,7 +77,7 @@ public interface HttpServiceProxyRegistry {
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer);
 
-		// TODO: move out of the builder
+		// TODO: move out of the builder?
 		Set<InterfaceClientData> discoverClients(List<String> basePackages);
 
 		Builder<B, CB> addClient(InterfaceClientData interfaceClientData,

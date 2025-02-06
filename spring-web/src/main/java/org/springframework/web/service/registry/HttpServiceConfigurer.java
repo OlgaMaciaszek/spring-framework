@@ -51,7 +51,7 @@ public interface HttpServiceConfigurer {
 	}
 
 	default HttpServiceConfigurer discoverServiceTypes(Class<?>[] basePackages) {
-		return discoverServiceTypes(basePackages);
+		return discoverServiceTypes(basePackages, Collections.emptyList(), Collections.emptyList());
 	}
 
 

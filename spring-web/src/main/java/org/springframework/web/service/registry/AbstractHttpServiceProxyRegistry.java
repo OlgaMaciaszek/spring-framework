@@ -203,7 +203,7 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 			return (T) this;
 		}
 
-		// TODO: move out of the builder
+		// TODO: move out of the builder?
 		@Override
 		public Set<InterfaceClientData> discoverClients(List<String> basePackages) {
 			Set<BeanDefinition> annotationConfigClasses = discoverAnnotatedConfigurationClasses(basePackages);
