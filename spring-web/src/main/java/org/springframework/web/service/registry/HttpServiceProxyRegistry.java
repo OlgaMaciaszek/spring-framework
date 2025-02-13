@@ -16,7 +16,6 @@
 
 package org.springframework.web.service.registry;
 
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -76,12 +75,6 @@ public interface HttpServiceProxyRegistry {
 				Consumer<HttpServiceConfigurer> httpServiceConfigurerConsumer,
 				Consumer<CB> clientBuilderConsumer,
 				Consumer<HttpServiceProxyFactory.Builder> proxyFactoryBuilderConsumer);
-
-		// TODO: move out of the builder?
-		Set<InterfaceClientData> discoverClients(List<String> basePackages);
-
-		Builder<B, CB> addClient(InterfaceClientData interfaceClientData,
-				Consumer<CB> clientBuilderConsumer);
 
 		Builder<B, CB> apply(HttpServiceGroup.Configurer<CB> configurer);
 

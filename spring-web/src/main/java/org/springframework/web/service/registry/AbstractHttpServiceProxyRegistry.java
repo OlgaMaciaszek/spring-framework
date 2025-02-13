@@ -16,10 +16,8 @@
 
 package org.springframework.web.service.registry;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,20 +28,15 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 /**
@@ -147,7 +140,7 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 			AbstractHttpServiceGroup<CB> group = createGroup(baseUrl, actualName);
 
 			// Avoid failing silently if the user adds two groups under same name
-			if(this.groups.contains(group)) {
+			if (this.groups.contains(group)) {
 				throw new IllegalArgumentException("Can only create one group with a given name.");
 			}
 			this.groups.add(group);
@@ -162,26 +155,6 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 		protected abstract AbstractHttpServiceGroup<CB> createGroup(String baseUrl, String name);
 
 		@Override
-		public Builder<B, CB> addClient(InterfaceClientData interfaceClientData,
-				Consumer<CB> clientBuilderConsumer) {
-
-				if (interfaceClientData.httpServiceTypes().length != 0) {
-					addClient(interfaceClientData.value(), interfaceClientData.name(),
-							httpServiceConfigurer -> httpServiceConfigurer
-									.addServiceTypes(interfaceClientData.httpServiceTypes()),
-							clientBuilderConsumer, proxyFactoryBuilder -> {});
-				}
-				else {
-					addClient(interfaceClientData.value(), interfaceClientData.name(),
-							httpServiceConfigurer -> httpServiceConfigurer
-									.discoverServiceTypes(getBasePackages(interfaceClientData)),
-							clientBuilderConsumer, proxyFactoryBuilder -> {});
-				}
-
-			return this;
-		}
-
-		@Override
 		public Builder<B, CB> apply(HttpServiceGroup.Configurer<CB> configurer) {
 			this.groups.forEach(configurer::configure);
 			return self();
@@ -191,7 +164,8 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 		public HttpServiceProxyRegistry build() {
 
 			Set<HttpServiceProxyGroup> proxyGroups =
-					this.groups.stream().map(HttpServiceProxyGroup::create).collect(Collectors.toSet());
+					this.groups.stream().map(HttpServiceProxyGroup::create)
+							.collect(Collectors.toSet());
 
 			return initRegistry(proxyGroups);
 		}
@@ -203,57 +177,6 @@ public abstract class AbstractHttpServiceProxyRegistry implements HttpServicePro
 			return (T) this;
 		}
 
-		// TODO: move out of the builder?
-		@Override
-		public Set<InterfaceClientData> discoverClients(List<String> basePackages) {
-			Set<BeanDefinition> annotationConfigClasses = discoverAnnotatedConfigurationClasses(basePackages);
-			Set<InterfaceClientData> interfaceClientData = new HashSet<>();
-			for (BeanDefinition annotationConfigClass : annotationConfigClasses) {
-				if (annotationConfigClass instanceof AnnotatedBeanDefinition beanDefinition) {
-					AnnotationMetadata annotatedBeanMetadata = beanDefinition.getMetadata();
-					MergedAnnotation<? extends Annotation> annotation = annotatedBeanMetadata.getAnnotations()
-							.get(InterfaceClient.class);
-					interfaceClientData.add(new InterfaceClientData(annotation.getString(MergedAnnotation.VALUE),
-							annotation.getString("name"),
-							annotation.getStringArray("basePackages"),
-							annotation.getClassArray("basePackageClasses"),
-							annotation.getClassArray("httpServiceTypes"),
-							annotatedBeanMetadata.getClassName()));
-				}
-			}
-			return interfaceClientData;
-		}
-
-		private Set<BeanDefinition> discoverAnnotatedConfigurationClasses(List<String> basePackages) {
-			Set<BeanDefinition> annotationConfigClasses = new HashSet<>();
-			Environment environment = this.environment != null ? this.environment : new StandardEnvironment();
-			ClassPathScanningCandidateComponentProvider componentProvider =
-					new ClassPathScanningCandidateComponentProvider(false, environment);
-			componentProvider.setResourceLoader(this.resourceLoader);
-			componentProvider.setResourceLoader(this.resourceLoader);
-			componentProvider.addIncludeFilter(new AnnotationTypeFilter(InterfaceClient.class));
-			for (String basePackage : basePackages) {
-				annotationConfigClasses.addAll(componentProvider.findCandidateComponents(basePackage));
-			}
-			return annotationConfigClasses;
-		}
-
-		protected String[] getBasePackages(InterfaceClientData clientData) {
-			Set<String> basePackages = new HashSet<>();
-			for (String pkg : clientData.basePackages()) {
-				if (StringUtils.hasText(pkg)) {
-					basePackages.add(pkg);
-				}
-			}
-			for (Class<?> clazz : clientData.basePackageClasses()) {
-				basePackages.add(ClassUtils.getPackageName(clazz));
-			}
-
-			if (basePackages.isEmpty()) {
-				basePackages.add(ClassUtils.getPackageName(clientData.importingClassName()));
-			}
-			return basePackages.toArray(String[]::new);
-		}
 	}
 
 }

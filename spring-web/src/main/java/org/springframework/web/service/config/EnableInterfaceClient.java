@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.web.service.registry;
+package org.springframework.web.service.config;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -35,8 +35,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Repeatable(InterfaceClients.class)
-public @interface InterfaceClient {
+@Repeatable(EnableInterfaceClients.class)
+public @interface EnableInterfaceClient {
 
 	/**
 	 * The {@code baseUrl}  of the host or service the client communicates with.

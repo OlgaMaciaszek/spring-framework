@@ -40,7 +40,7 @@ public interface HttpServiceConfigurer {
 		return discoverServiceTypes(basePackageClass.getName(), includeFilters, excludeFilters);
 	}
 
-	HttpServiceConfigurer discoverServiceTypes(
+ 	HttpServiceConfigurer discoverServiceTypes(
 			String[] basePackages, List<TypeFilter> includeFilters, List<TypeFilter> excludeFilters);
 
 	HttpServiceConfigurer discoverServiceTypes(
