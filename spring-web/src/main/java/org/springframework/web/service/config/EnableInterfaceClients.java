@@ -9,16 +9,16 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * Container annotation that aggregates several {@link EnableInterfaceClient} annotations.
+ * Container annotation that aggregates several {@link InterfaceClient} annotations.
  *
- * <p>Can be used natively, declaring several nested {@link EnableInterfaceClient} annotations.
+ * <p>Can be used natively, declaring several nested {@link InterfaceClient} annotations.
  * Can also be used in conjunction with Java 8's support for repeatable annotations,
- * where {@link EnableInterfaceClient} can simply be declared several times on the same method,
+ * where {@link InterfaceClient} can simply be declared several times on the same method,
  * implicitly generating this container annotation.
  *
  * @author Olga Maciaszek-Sharma
  * @since 7.0
- * @see EnableInterfaceClient
+ * @see InterfaceClient
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -26,6 +26,6 @@ import org.springframework.context.annotation.Import;
 @Import(HttpInterfaceClientsConfiguration.class)
 public @interface EnableInterfaceClients {
 
-	EnableInterfaceClient[] value() default {};
+	InterfaceClient[] value() default {};
 }
 
