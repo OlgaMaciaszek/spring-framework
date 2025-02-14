@@ -40,7 +40,8 @@ public class HttpClientsRegistryPostProcessor implements BeanDefinitionRegistryP
 		// TODO: also support configuring proxy factory
 		// TODO: support bot RestClient and WebClient registries in different levels
 		RestClientProxyRegistry.Builder restClientProxyRegistryBuilder = beanFactory.getBean(RestClientProxyRegistry.Builder.class);
-		beanFactory.getBeansOfType(RestClientHttpServiceGroupConfigurer.class).values().forEach(restClientProxyRegistryBuilder::apply);
+		beanFactory.getBeansOfType(RestClientHttpServiceGroupConfigurer.class).values()
+				.forEach(restClientProxyRegistryBuilder::apply);
 
 		Map<String, Set<MergedAnnotation<InterfaceClient>>> annotationsMap = getAnnotations(beanFactory, registry);
 
@@ -48,7 +49,7 @@ public class HttpClientsRegistryPostProcessor implements BeanDefinitionRegistryP
 	}
 
 	protected String[] getBasePackages(String[] basePackages,
-			Class<?>[] basePackageClasses, String importingClassName) {
+			Class<?>[] basePackageClasses, String importingClassName, boolean serviceTypesListed) {
 		Set<String> packages = new HashSet<>();
 		for (String pkg : basePackages) {
 			if (StringUtils.hasText(pkg)) {
@@ -60,7 +61,7 @@ public class HttpClientsRegistryPostProcessor implements BeanDefinitionRegistryP
 			packages.add(ClassUtils.getPackageName(clazz));
 		}
 
-		if (packages.isEmpty()) {
+		if (packages.isEmpty() && !serviceTypesListed) {
 			packages.add(ClassUtils.getPackageName(importingClassName));
 		}
 		return packages.toArray(String[]::new);
@@ -93,12 +94,14 @@ public class HttpClientsRegistryPostProcessor implements BeanDefinitionRegistryP
 		for (String key : annotationsMap.keySet()) {
 			Set<MergedAnnotation<InterfaceClient>> annotations = annotationsMap.get(key);
 			for (MergedAnnotation<InterfaceClient> annotation : annotations) {
+				Class<?>[] serviceTypes = annotation.getClassArray("httpServiceTypes");
 				registryBuilder.addClient(annotation.getString(MergedAnnotation.VALUE),
 						annotation.getString("name"),
 						httpServiceConfigurer -> httpServiceConfigurer
-								.addServiceTypes(annotation.getClassArray("httpServiceTypes"))
+								.addServiceTypes(serviceTypes)
 								.discoverServiceTypes(getBasePackages(annotation.getStringArray("basePackages"),
-										annotation.getClassArray("basePackageClasses"), key)),
+//										FIXME: refactor checking for service types while resolving base packages
+										annotation.getClassArray("basePackageClasses"), key, serviceTypes.length > 0)),
 						clientBuilder -> {
 						},
 						proxyFactoryBuilder -> {
