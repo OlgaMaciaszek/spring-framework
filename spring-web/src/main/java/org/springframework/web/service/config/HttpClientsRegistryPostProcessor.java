@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jspecify.annotations.Nullable;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -24,7 +22,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.service.registry.HttpServiceGroup;
+import org.springframework.web.client.support.RestClientProxyRegistry;
 import org.springframework.web.service.registry.HttpServiceProxyGroup;
 import org.springframework.web.service.registry.HttpServiceProxyRegistry;
 
@@ -34,53 +32,18 @@ import org.springframework.web.service.registry.HttpServiceProxyRegistry;
 public class HttpClientsRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor {
 
 	@Override
-	public void postProcessBeanDefinitionRegistry(@Nullable BeanDefinitionRegistry registry) throws BeansException {
+	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 		Assert.isInstanceOf(ListableBeanFactory.class, registry,
 				"Registry must be an instance of " + ListableBeanFactory.class.getSimpleName());
 		ListableBeanFactory beanFactory = (ListableBeanFactory) registry;
 
-		// TODO: handle null
-		HttpServiceProxyRegistry.Builder<?, ?> registryBuilder = beanFactory
-				.getBean(HttpServiceProxyRegistry.Builder.class);
-
-
-		// TODO
-		Map<String, ?> serviceProxyGroupConfigurers =
-				beanFactory.getBeansOfType(HttpServiceGroup.Configurer.class);
+		// TODO: support bot RestClient and WebClient registries in different levels
+		RestClientProxyRegistry.Builder restClientProxyRegistryBuilder = beanFactory.getBean(RestClientProxyRegistry.Builder.class);
+		beanFactory.getBeansOfType(RestClientHttpServiceGroupConfigurer.class).values().forEach(restClientProxyRegistryBuilder::apply);
 
 		Map<String, Set<MergedAnnotation<EnableInterfaceClient>>> annotationsMap = getAnnotations(beanFactory, registry);
 
-		for (String key : annotationsMap.keySet()) {
-			Set<MergedAnnotation<EnableInterfaceClient>> annotations = annotationsMap.get(key);
-			for (MergedAnnotation<EnableInterfaceClient> annotation : annotations) {
-				registryBuilder.addClient(annotation.getString(MergedAnnotation.VALUE),
-						annotation.getString("name"),
-						httpServiceConfigurer -> httpServiceConfigurer
-								.addServiceTypes(annotation.getClassArray("httpServiceTypes"))
-								.discoverServiceTypes(getBasePackages(annotation.getStringArray("basePackages"),
-										annotation.getClassArray("basePackageClasses"), key)),
-						// TODO
-						clientBuilder -> {
-						},
-						proxyFactoryBuilder -> {
-						});
-			}
-		}
-
-
-		HttpServiceProxyRegistry interfaceClientRegistry = registryBuilder.build();
-
-		registerBeanDefinition(registry, "httpInterfaceClientRegistry", HttpServiceProxyRegistry.class,
-				interfaceClientRegistry);
-
-		for (HttpServiceProxyGroup clientGroup : interfaceClientRegistry.getProxyGroups()) {
-			Map<Class<?>, Object> proxies = clientGroup.proxies();
-			for (Class<?> proxyClass : proxies.keySet()) {
-				// TODO: * create better bean names from urls?
-				String beanName = clientGroup.name() + proxyClass.getSimpleName();
-				registerBeanDefinition(registry, beanName, proxyClass, proxies.get(proxyClass));
-			}
-		}
+		registerBeanDefinitions(registry, annotationsMap, restClientProxyRegistryBuilder);
 	}
 
 	protected String[] getBasePackages(String[] basePackages,
@@ -102,7 +65,45 @@ public class HttpClientsRegistryPostProcessor implements BeanDefinitionRegistryP
 		return packages.toArray(String[]::new);
 	}
 
-	private static void registerBeanDefinition(BeanDefinitionRegistry registry, String beanName, Class<?> beanClass,
+	private void registerBeanDefinitions(BeanDefinitionRegistry registry, Map<String, Set<MergedAnnotation<EnableInterfaceClient>>> annotationsMap, RestClientProxyRegistry.Builder registryBuilder) {
+		addClientGroups(annotationsMap, registryBuilder);
+
+
+		HttpServiceProxyRegistry interfaceClientRegistry = registryBuilder.build();
+
+		registerBeanDefinitions(registry, "httpInterfaceClientRegistry", HttpServiceProxyRegistry.class,
+				interfaceClientRegistry);
+
+		for (HttpServiceProxyGroup clientGroup : interfaceClientRegistry.getProxyGroups()) {
+			Map<Class<?>, Object> proxies = clientGroup.proxies();
+			for (Class<?> proxyClass : proxies.keySet()) {
+				// TODO: * create better bean names from urls?
+				String beanName = clientGroup.name() + proxyClass.getSimpleName();
+				registerBeanDefinitions(registry, beanName, proxyClass, proxies.get(proxyClass));
+			}
+		}
+	}
+
+	private void addClientGroups(Map<String, Set<MergedAnnotation<EnableInterfaceClient>>> annotationsMap, RestClientProxyRegistry.Builder registryBuilder) {
+		for (String key : annotationsMap.keySet()) {
+			Set<MergedAnnotation<EnableInterfaceClient>> annotations = annotationsMap.get(key);
+			for (MergedAnnotation<EnableInterfaceClient> annotation : annotations) {
+				registryBuilder.addClient(annotation.getString(MergedAnnotation.VALUE),
+						annotation.getString("name"),
+						httpServiceConfigurer -> httpServiceConfigurer
+								.addServiceTypes(annotation.getClassArray("httpServiceTypes"))
+								.discoverServiceTypes(getBasePackages(annotation.getStringArray("basePackages"),
+										annotation.getClassArray("basePackageClasses"), key)),
+						// TODO
+						clientBuilder -> {
+						},
+						proxyFactoryBuilder -> {
+						});
+			}
+		}
+	}
+
+	private static void registerBeanDefinitions(BeanDefinitionRegistry registry, String beanName, Class<?> beanClass,
 			Object object) {
 		BeanDefinition definition = BeanDefinitionBuilder
 				.rootBeanDefinition(ResolvableType.forClass(beanClass), () -> object)
