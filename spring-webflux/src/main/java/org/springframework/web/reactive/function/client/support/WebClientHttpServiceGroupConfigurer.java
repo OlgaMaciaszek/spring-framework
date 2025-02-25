@@ -19,6 +19,8 @@ package org.springframework.web.reactive.function.client.support;
 import org.springframework.web.service.registry.HttpServiceGroupConfigurer;
 
 /**
+ * {@link HttpServiceGroupConfigurer} for {@link WebClientHttpServiceGroup}.
+ *
  * @author Rossen Stoyanchev
  * @since 7.0
  */

@@ -19,6 +19,8 @@ package org.springframework.web.client.support;
 import org.springframework.web.service.registry.HttpServiceGroupConfigurer;
 
 /**
+ * {@link HttpServiceGroupConfigurer} for {@link RestClientHttpServiceGroup}.
+ *
  * @author Rossen Stoyanchev
  * @since 7.0
  */

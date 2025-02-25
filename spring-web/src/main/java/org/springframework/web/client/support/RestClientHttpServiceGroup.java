@@ -16,8 +16,6 @@
 
 package org.springframework.web.client.support;
 
-import org.jspecify.annotations.Nullable;
-
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.service.invoker.HttpExchangeAdapter;

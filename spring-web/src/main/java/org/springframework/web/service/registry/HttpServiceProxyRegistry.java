@@ -16,7 +16,9 @@
 
 package org.springframework.web.service.registry;
 
-import java.util.Set;
+import java.util.Map;
+
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.EnvironmentAware;
@@ -31,14 +33,35 @@ import org.springframework.context.ResourceLoaderAware;
  *
  * @author Rossen Stoyanchev
  * @since 7.0
+ * @param <G> the type of HttpServiceGroup supported by the registry
  */
 public interface HttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>>
 		extends EnvironmentAware, ResourceLoaderAware, InitializingBean {
 
 	/**
+	 * Return a client proxy of the given type from any group as long as there
+	 * is only one proxy of the given type across all groups.
+	 * @param proxyType the proxy type to return
+	 * @return the proxy instance or {@code null} if not found
+	 * @param <P> the proxy type
+	 * @throws IllegalArgumentException if there is more than one proxy of
+	 * the given type
+	 */
+	<P> @Nullable P getClientProxy(Class<P> proxyType);
+
+	/**
+	 * Return a client proxy from the identified group.
+	 * @param groupId identifier of the group
+	 * @param proxyType the proxy type to return
+	 * @return the proxy instance or {@code null} if not found
+	 * @param <P> the proxy type
+	 */
+	<P> @Nullable P getClientProxy(String groupId, Class<P> proxyType);
+
+	/**
 	 * Get all registered HTTP Service groups.
 	 */
-	Set<G> getGroups();
+	Map<String, G> getGroups();
 
 	/**
 	 * Add a new group.

@@ -156,16 +156,14 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T getProxy(Class<T> proxyType) {
-		Assert.state(this.proxyMap != null, "Proxies not initialized yet");
-		T proxy = (T) this.proxyMap.get(proxyType);
-		Assert.state(proxy != null, "No proxy of type [" + proxyType + "]");
-		return proxy;
+	public <T> @Nullable T getClientProxy(Class<T> proxyType) {
+		return (T) getClientProxyMap().get(proxyType);
 	}
 
 	@Override
-	public Map<Class<?>, Object> getProxies() {
-		return (this.proxyMap != null ? this.proxyMap : Collections.emptyMap());
+	public Map<Class<?>, Object> getClientProxyMap() {
+		Assert.state(this.proxyMap != null, "Proxies not initialized yet");
+		return this.proxyMap;
 	}
 
 

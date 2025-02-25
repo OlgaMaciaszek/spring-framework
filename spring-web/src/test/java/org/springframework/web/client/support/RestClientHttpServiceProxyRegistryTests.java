@@ -37,7 +37,6 @@ public class RestClientHttpServiceProxyRegistryTests {
 
 	private final MockWebServer server1 = new MockWebServer();
 
-
 	@Test
 	void basic() throws Exception {
 		registry.registerGroup("greetingServiceA", group -> group
@@ -46,7 +45,7 @@ public class RestClientHttpServiceProxyRegistryTests {
 
 		registry.afterPropertiesSet();
 
-		GreetingServiceA serviceA = registry.getGroups().iterator().next().getProxy(GreetingServiceA.class);
+		GreetingServiceA serviceA = registry.getClientProxy(GreetingServiceA.class);
 
 		MockResponse response = new MockResponse();
 		response.setHeader("Content-Type", "text/plain").setBody("Hello, A!");

@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
@@ -29,6 +31,7 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
  *
  * @author Rossen Stoyanchev
  * @since 7.0
+ * @param <G> the concrete HttpServiceGroup subtype
  * @param <CB> the type of client builder (e.g. RestClient.Builder)
  */
 public interface HttpServiceGroup<G extends HttpServiceGroup<G, CB>, CB> {
@@ -83,16 +86,16 @@ public interface HttpServiceGroup<G extends HttpServiceGroup<G, CB>, CB> {
 	/**
 	 * Return the proxy instance for the given HttpService type.
 	 * @param <T> the proxy type
-	 * @throws IllegalArgumentException if there is no proxy of the given type,
-	 * or the {@code HttpServiceGroup} hasn't been initialized.
+	 * @throws IllegalStateException if {@link #initProxies()} has not been called yet called
 	 */
-	<T> T getProxy(Class<T> proxyType);
+	<T> @Nullable T getClientProxy(Class<T> proxyType);
 
 	/**
 	 * Return a Map from HttpService types to proxy instances. The returned Map is
 	 * empty before {@link #initProxies()} is called.
+	 * @throws IllegalStateException if {@link #initProxies()} has not been called yet called
 	 */
-	Map<Class<?>, Object> getProxies();
+	Map<Class<?>, Object> getClientProxyMap();
 
 
 	/**

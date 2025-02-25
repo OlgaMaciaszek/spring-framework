@@ -21,6 +21,7 @@ package org.springframework.web.service.registry;
  *
  * @author Rossen Stoyanchev
  * @since 7.0
+ * @param <G> the type of HttpServiceGroup supported by the configurer
  */
 @FunctionalInterface
 public interface HttpServiceGroupConfigurer<G extends HttpServiceGroup<G, ?>> {

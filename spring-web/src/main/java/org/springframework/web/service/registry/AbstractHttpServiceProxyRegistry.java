@@ -17,8 +17,8 @@
 package org.springframework.web.service.registry;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -39,7 +39,7 @@ import org.springframework.core.type.AnnotationMetadata;
 public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>>
 		implements HttpServiceProxyRegistry<G> {
 
-	private final Set<G> groups = new LinkedHashSet<>();
+	private final Map<String, G> groups = new LinkedHashMap<>();
 
 	private @Nullable Environment environment;
 
@@ -49,8 +49,30 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 
 
 	@Override
-	public Set<G> getGroups() {
-		return Collections.unmodifiableSet(this.groups);
+	public <P> @Nullable P getClientProxy(Class<P> proxyType) {
+		P result = null;
+		for (G group : this.groups.values()) {
+			P p = group.getClientProxy(proxyType);
+			if (p != null) {
+				if (result != null) {
+					throw new IllegalArgumentException(
+							"More than one proxy of type " + proxyType.getName() + " found");
+				}
+				result = p;
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public <P> @Nullable P getClientProxy(String groupId, Class<P> proxyType) {
+		G group = this.groups.get(groupId);
+		return (group != null ? group.getClientProxy(proxyType) : null);
+	}
+
+	@Override
+	public Map<String, G> getGroups() {
+		return Collections.unmodifiableMap(this.groups);
 	}
 
 	@Override
@@ -65,9 +87,12 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 
 	@Override
 	public void registerGroup(String id, HttpServiceGroupConfigurer<G> configurer) {
+		if (this.groups.containsKey(id)) {
+			throw new IllegalArgumentException("Group with id  '" + id + "' already exists");
+		}
 		G group = createGroup(id, getComponentProvider());
 		configurer.configure(group);
-		this.groups.add(group);
+		this.groups.put(id, group);
 	}
 
 	protected abstract G createGroup(String id, ClassPathScanningCandidateComponentProvider componentProvider);
@@ -84,14 +109,14 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 
 	@Override
 	public void apply(HttpServiceGroupConfigurer<G> groupConfigurer) {
-		for (G group : this.groups) {
+		for (G group : this.groups.values()) {
 			groupConfigurer.configure(group);
 		}
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		for (G group : this.groups) {
+		for (G group : this.groups.values()) {
 			group.initProxies();
 		}
 	}

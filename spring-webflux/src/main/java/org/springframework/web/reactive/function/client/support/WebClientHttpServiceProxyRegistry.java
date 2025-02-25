@@ -16,13 +16,14 @@
 
 package org.springframework.web.reactive.function.client.support;
 
-import org.jspecify.annotations.Nullable;
-
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.service.registry.AbstractHttpServiceProxyRegistry;
+import org.springframework.web.service.registry.HttpServiceProxyRegistry;
 
 /**
+ * {@link HttpServiceProxyRegistry} for a {@link WebClient.Builder}.
+ *
  * @author Rossen Stoyanchev
  * @since 7.0
  */
