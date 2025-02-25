@@ -94,6 +94,7 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 	@Override
 	public G detectHttpServiceTypes(Consumer<ScanSpec> scanConfigurer) {
 		DefaultScanSpec scan = new DefaultScanSpec();
+		scanConfigurer.accept(scan);
 		scan.getIncludeFilters().forEach(this.componentProvider::addIncludeFilter);
 		scan.getExcludeFilters().forEach(this.componentProvider::addExcludeFilter);
 
@@ -102,8 +103,7 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 				String className = definition.getBeanClassName();
 				if (className == null) {
 					continue;
-				}
-				try {
+				}try {
 					Class<?> clazz = ClassUtils.forName(className, getClass().getClassLoader());
 					this.httpServiceTypes.add(clazz);
 				}
