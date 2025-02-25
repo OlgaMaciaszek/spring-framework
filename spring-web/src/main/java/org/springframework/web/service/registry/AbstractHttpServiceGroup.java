@@ -103,6 +103,7 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 	@Override
 	public G detectHttpServiceTypes(Consumer<ScanSpec> scanConfigurer) {
 		DefaultScanSpec scan = new DefaultScanSpec();
+		scanConfigurer.accept(scan);
 		scan.getIncludeFilters().forEach(this.componentProvider::addIncludeFilter);
 		scan.getExcludeFilters().forEach(this.componentProvider::addExcludeFilter);
 
