@@ -115,7 +115,7 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterSingletonsInstantiated() {
 		for (G group : this.groups.values()) {
 			group.initProxies();
 		}

@@ -21,6 +21,7 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 
@@ -36,7 +37,7 @@ import org.springframework.context.ResourceLoaderAware;
  * @param <G> the type of HttpServiceGroup supported by the registry
  */
 public interface HttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>>
-		extends EnvironmentAware, ResourceLoaderAware, InitializingBean {
+		extends EnvironmentAware, ResourceLoaderAware, SmartInitializingSingleton {
 
 	/**
 	 * Return a client proxy of the given type from any group as long as there
