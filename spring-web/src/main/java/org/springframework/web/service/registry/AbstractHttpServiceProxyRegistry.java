@@ -76,6 +76,11 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 	private void addGroupInternal(String baseUrl, @Nullable String name, HttpServiceGroupConfigurer<G> configurer) {
 		G group = createGroup(baseUrl, name, getComponentProvider());
 		configurer.configure(group);
+
+		// Avoid failing silently if the user adds two groups under same name
+		if (this.groups.contains(group)) {
+			throw new IllegalArgumentException("Can only create one group with a given name.");
+		}
 		this.groups.add(group);
 	}
 

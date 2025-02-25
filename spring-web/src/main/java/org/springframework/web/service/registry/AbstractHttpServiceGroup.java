@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -165,6 +166,9 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getProxy(Class<T> proxyType) {
+		if(this.proxyMap == null) {
+			initProxies();
+		}
 		Assert.state(this.proxyMap != null, "Proxies not initialized yet");
 		T proxy = (T) this.proxyMap.get(proxyType);
 		Assert.state(proxy != null, "No proxy of type [" + proxyType + "]");
@@ -176,7 +180,16 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 		return (this.proxyMap != null ? this.proxyMap : Collections.emptyMap());
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof AbstractHttpServiceGroup<?, ?> that)) return false;
+		return Objects.equals(baseUrl, that.baseUrl) && Objects.equals(name, that.name);
+	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(baseUrl, name);
+	}
 
 	private static class DefaultScanSpec implements ScanSpec {
 
