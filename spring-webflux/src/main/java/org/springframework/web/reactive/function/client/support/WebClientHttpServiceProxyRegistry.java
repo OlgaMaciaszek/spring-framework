@@ -38,10 +38,10 @@ public final class WebClientHttpServiceProxyRegistry extends AbstractHttpService
 
 	@Override
 	protected WebClientHttpServiceGroup createGroup(
-			String baseUrl, @Nullable String name, ClassPathScanningCandidateComponentProvider componentProvider) {
+			String id, ClassPathScanningCandidateComponentProvider componentProvider) {
 
 		WebClient.Builder builder = this.baseClientBuilder.clone();
-		return new WebClientHttpServiceGroup(baseUrl, name, builder, componentProvider);
+		return new WebClientHttpServiceGroup(id, builder, componentProvider);
 	}
 
 

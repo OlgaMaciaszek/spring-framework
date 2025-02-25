@@ -64,20 +64,13 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 	}
 
 	@Override
-	public void registerGroup(String baseUrl, HttpServiceGroupConfigurer<G> configurer) {
-		addGroupInternal(baseUrl, null, configurer);
-	}
-
-	@Override
-	public void registerGroup(String baseUrl, String name, HttpServiceGroupConfigurer<G> configurer) {
-		addGroupInternal(baseUrl, name, configurer);
-	}
-
-	private void addGroupInternal(String baseUrl, @Nullable String name, HttpServiceGroupConfigurer<G> configurer) {
-		G group = createGroup(baseUrl, name, getComponentProvider());
+	public void registerGroup(String id, HttpServiceGroupConfigurer<G> configurer) {
+		G group = createGroup(id, getComponentProvider());
 		configurer.configure(group);
 		this.groups.add(group);
 	}
+
+	protected abstract G createGroup(String id, ClassPathScanningCandidateComponentProvider componentProvider);
 
 	private ClassPathScanningCandidateComponentProvider getComponentProvider() {
 		if (this.componentProvider == null) {
@@ -88,9 +81,6 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 		}
 		return this.componentProvider;
 	}
-
-	protected abstract G createGroup(
-			String baseUrl, @Nullable String name, ClassPathScanningCandidateComponentProvider componentProvider);
 
 	@Override
 	public void apply(HttpServiceGroupConfigurer<G> groupConfigurer) {

@@ -42,19 +42,10 @@ public interface HttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>>
 
 	/**
 	 * Add a new group.
-	 * @param baseUrl the base URL for HTTP requests
+	 * @param id unique identifier for the group
 	 * @param groupConfigurer a configurer to further customize the group
 	 */
-	void registerGroup(String baseUrl, HttpServiceGroupConfigurer<G> groupConfigurer);
-
-	/**
-	 * Add a group, also supplying a name. This is useful when adding more than
-	 * one group for the same baseUrl.
-	 * @param baseUrl the base URL for HTTP requests
-	 * @param name a name for the group
-	 * @param groupConfigurer a configurer to further customize the group
-	 */
-	void registerGroup(String baseUrl, String name, HttpServiceGroupConfigurer<G> groupConfigurer);
+	void registerGroup(String id, HttpServiceGroupConfigurer<G> groupConfigurer);
 
 	/**
 	 * Apply the given configurer to all groups.

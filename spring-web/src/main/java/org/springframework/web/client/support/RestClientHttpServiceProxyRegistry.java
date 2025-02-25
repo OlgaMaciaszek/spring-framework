@@ -38,10 +38,10 @@ public final class RestClientHttpServiceProxyRegistry extends AbstractHttpServic
 
 	@Override
 	protected RestClientHttpServiceGroup createGroup(
-			String baseUrl, @Nullable String name, ClassPathScanningCandidateComponentProvider componentProvider) {
+			String id, ClassPathScanningCandidateComponentProvider componentProvider) {
 
 		RestClient.Builder builder = this.baseClientBuilder.clone();
-		return new RestClientHttpServiceGroup(baseUrl, name, builder, componentProvider);
+		return new RestClientHttpServiceGroup(id, builder, componentProvider);
 	}
 
 

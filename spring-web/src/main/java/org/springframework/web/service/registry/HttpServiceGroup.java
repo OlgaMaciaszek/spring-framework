@@ -21,8 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
@@ -38,17 +36,18 @@ public interface HttpServiceGroup<G extends HttpServiceGroup<G, CB>, CB> {
 	/**
 	 * Return the base URL for the HTTP Service group.
 	 */
-	String baseUrl();
-
-	/**
-	 * Return the name for the HTTP Service group, or {@code null} if not configured.
-	 */
-	@Nullable String name();
+	String id();
 
 	/**
 	 * Return the configured HTTP Service types.
 	 */
 	Set<Class<?>> httpServiceTypes();
+
+	/**
+	 * Set the baseUrl on the underlying client builder. A shortcut for doing the
+	 * same directly on the client builder via {@link #configureClient(Consumer)}.
+	 */
+	G baseUrl(String baseUrl);
 
 	/**
 	 * Add the given HTTP service types.

@@ -16,8 +16,6 @@
 
 package org.springframework.web.reactive.function.client.support;
 
-import org.jspecify.annotations.Nullable;
-
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -31,17 +29,22 @@ import org.springframework.web.service.registry.HttpServiceGroup;
  * @author Rossen Stoyanchev
  * @since 7.0
  */
-public final class WebClientHttpServiceGroup extends AbstractHttpServiceGroup<WebClientHttpServiceGroup, WebClient.Builder> {
+public final class WebClientHttpServiceGroup
+		extends AbstractHttpServiceGroup<WebClientHttpServiceGroup, WebClient.Builder> {
 
 
 	WebClientHttpServiceGroup(
-			String baseUrl, @Nullable String name, WebClient.Builder clientBuilder,
+			String id, WebClient.Builder clientBuilder,
 			ClassPathScanningCandidateComponentProvider componentProvider) {
 
-		super(baseUrl, name, clientBuilder, componentProvider);
-		clientBuilder.baseUrl(baseUrl);
+		super(id, clientBuilder, componentProvider);
 	}
 
+
+	@Override
+	public WebClientHttpServiceGroup baseUrl(String baseUrl) {
+		return configureClient(builder -> builder.baseUrl(baseUrl));
+	}
 
 	@Override
 	protected HttpExchangeAdapter createExchangeAdapter(WebClient.Builder baseClientBuilder) {

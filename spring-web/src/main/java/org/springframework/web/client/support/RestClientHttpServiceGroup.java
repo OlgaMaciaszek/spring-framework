@@ -30,17 +30,22 @@ import org.springframework.web.service.registry.HttpServiceGroup;
  * @author Rossen Stoyanchev
  * @since 7.0
  */
-public final class RestClientHttpServiceGroup extends AbstractHttpServiceGroup<RestClientHttpServiceGroup, RestClient.Builder> {
+public final class RestClientHttpServiceGroup
+		extends AbstractHttpServiceGroup<RestClientHttpServiceGroup, RestClient.Builder> {
 
 
 	RestClientHttpServiceGroup(
-			String baseUrl, @Nullable String name, RestClient.Builder clientBuilder,
+			String id, RestClient.Builder clientBuilder,
 			ClassPathScanningCandidateComponentProvider componentProvider) {
 
-		super(baseUrl, name, clientBuilder, componentProvider);
-		clientBuilder.baseUrl(baseUrl);
+		super(id, clientBuilder, componentProvider);
 	}
 
+
+	@Override
+	public RestClientHttpServiceGroup baseUrl(String baseUrl) {
+		return configureClient(builder -> builder.baseUrl(baseUrl));
+	}
 
 	@Override
 	protected HttpExchangeAdapter createExchangeAdapter(RestClient.Builder baseClientBuilder) {

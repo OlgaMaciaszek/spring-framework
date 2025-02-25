@@ -53,9 +53,7 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGroup<G, CB>, CB>
 		implements HttpServiceGroup<G, CB> {
 
-	private final String baseUrl;
-
-	private final @Nullable String name;
+	private final String id;
 
 	private final CB baseClientBuilder;
 
@@ -68,24 +66,18 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 	private @Nullable Map<Class<?>, Object> proxyMap;
 
 
-	protected AbstractHttpServiceGroup(String baseUrl, @Nullable String name, CB baseClientBuilder,
-			ClassPathScanningCandidateComponentProvider componentProvider) {
+	protected AbstractHttpServiceGroup(
+			String id, CB baseClientBuilder, ClassPathScanningCandidateComponentProvider componentProvider) {
 
-		this.baseUrl = baseUrl;
-		this.name = name;
+		this.id = id;
 		this.baseClientBuilder = baseClientBuilder;
 		this.componentProvider = componentProvider;
 	}
 
 
 	@Override
-	public String baseUrl() {
-		return this.baseUrl;
-	}
-
-	@Override
-	public @Nullable String name() {
-		return this.name;
+	public String id() {
+		return this.id;
 	}
 
 	@Override
