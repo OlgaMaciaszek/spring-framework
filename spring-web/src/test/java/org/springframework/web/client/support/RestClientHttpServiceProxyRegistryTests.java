@@ -38,12 +38,12 @@ public class RestClientHttpServiceProxyRegistryTests {
 	private final MockWebServer server1 = new MockWebServer();
 
 	@Test
-	void basic() throws Exception {
+	void basic() {
 		registry.registerGroup("greetingServiceA", group -> group
 				.addHttpServiceTypes(GreetingServiceA.class)
 				.configureClient(builder -> builder.baseUrl(server1.url("/").toString())));
 
-		registry.afterPropertiesSet();
+		registry.afterSingletonsInstantiated();
 
 		GreetingServiceA serviceA = registry.getClientProxy(GreetingServiceA.class);
 

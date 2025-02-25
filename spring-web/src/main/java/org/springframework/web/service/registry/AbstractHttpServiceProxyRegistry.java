@@ -37,7 +37,7 @@ import org.springframework.core.type.AnnotationMetadata;
  * @param <G> the type of {@link HttpServiceGroup} supported by the registry
  */
 public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>>
-		implements HttpServiceProxyRegistry<G> {
+		implements ConfigurableHttpServiceProxyRegistry<G> {
 
 	private final Map<String, G> groups = new LinkedHashMap<>();
 

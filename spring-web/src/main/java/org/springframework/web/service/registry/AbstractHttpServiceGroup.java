@@ -103,7 +103,8 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 				String className = definition.getBeanClassName();
 				if (className == null) {
 					continue;
-				}try {
+				}
+				try {
 					Class<?> clazz = ClassUtils.forName(className, getClass().getClassLoader());
 					this.httpServiceTypes.add(clazz);
 				}

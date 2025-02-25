@@ -20,11 +20,6 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.SmartInitializingSingleton;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.context.ResourceLoaderAware;
-
 /**
  * Registry for access to HTTP Service proxies grouped by target URL.
  *
@@ -36,12 +31,11 @@ import org.springframework.context.ResourceLoaderAware;
  * @since 7.0
  * @param <G> the type of HttpServiceGroup supported by the registry
  */
-public interface HttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>>
-		extends EnvironmentAware, ResourceLoaderAware, SmartInitializingSingleton {
+public interface HttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>> {
 
 	/**
-	 * Return a client proxy of the given type from any group as long as there
-	 * is only one proxy of the given type across all groups.
+	 * Return a client proxy of the given type from any HTTP Service group as
+	 * long as there is only one proxy of the given type across all groups.
 	 * @param proxyType the proxy type to return
 	 * @return the proxy instance or {@code null} if not found
 	 * @param <P> the proxy type
@@ -51,7 +45,7 @@ public interface HttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>>
 	<P> @Nullable P getClientProxy(Class<P> proxyType);
 
 	/**
-	 * Return a client proxy from the identified group.
+	 * Return a client proxy from the identified HTTP Service group.
 	 * @param groupId identifier of the group
 	 * @param proxyType the proxy type to return
 	 * @return the proxy instance or {@code null} if not found
@@ -63,17 +57,5 @@ public interface HttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>>
 	 * Get all registered HTTP Service groups.
 	 */
 	Map<String, G> getGroups();
-
-	/**
-	 * Add a new group.
-	 * @param id unique identifier for the group
-	 * @param groupConfigurer a configurer to further customize the group
-	 */
-	void registerGroup(String id, HttpServiceGroupConfigurer<G> groupConfigurer);
-
-	/**
-	 * Apply the given configurer to all groups.
-	 */
-	void apply(HttpServiceGroupConfigurer<G> groupConfigurer);
 
 }
