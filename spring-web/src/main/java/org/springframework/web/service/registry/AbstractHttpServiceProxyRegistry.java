@@ -53,14 +53,14 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 
 
 	@Override
-	public <P> @Nullable P getClientProxy(Class<P> proxyType) {
+	public <P> @Nullable P getClientProxy(Class<P> httpServiceType) {
 		P result = null;
 		for (G group : this.groups.values()) {
-			P p = group.getClientProxy(proxyType);
+			P p = group.getClientProxy(httpServiceType);
 			if (p != null) {
 				if (result != null) {
 					throw new IllegalArgumentException(
-							"More than one proxy of type " + proxyType.getName() + " found");
+							"More than one client proxy of type " + httpServiceType.getName() + " found");
 				}
 				result = p;
 			}
@@ -69,9 +69,9 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 	}
 
 	@Override
-	public <P> @Nullable P getClientProxy(String groupId, Class<P> proxyType) {
+	public <P> @Nullable P getClientProxy(String groupId, Class<P> httpServiceType) {
 		G group = this.groups.get(groupId);
-		return (group != null ? group.getClientProxy(proxyType) : null);
+		return (group != null ? group.getClientProxy(httpServiceType) : null);
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 	@Override
 	public void afterSingletonsInstantiated() {
 		for (G group : this.groups.values()) {
-			group.initProxies();
+			group.initClientProxies();
 		}
 	}
 

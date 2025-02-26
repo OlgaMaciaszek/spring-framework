@@ -16,14 +16,12 @@
 
 package org.springframework.web.service.registry;
 
-import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 /**
@@ -83,21 +81,22 @@ public interface HttpServiceGroup<G extends HttpServiceGroup<G, CB>, CB> {
 	G configureProxyFactory(Consumer<HttpServiceProxyFactory.Builder> configurer);
 
 	/**
-	 * Create proxy instances for all HTTP Service types.
+	 * Create the client proxy instances for all configured HTTP Service types.
 	 */
-	void initProxies();
+	void initClientProxies();
 
 	/**
-	 * Return the proxy instance for the given HttpService type.
-	 * @param <T> the proxy type
-	 * @throws IllegalStateException if {@link #initProxies()} has not been called yet called
+	 * Return the client proxy instance for the given HttpService type.
+	 * @param httpServiceType the type of HTTP Service to return
+	 * @param <T> the HTTP Service type
+	 * @throws IllegalStateException if {@link #initClientProxies()} has not been called yet called
 	 */
-	<T> @Nullable T getClientProxy(Class<T> proxyType);
+	<T> @Nullable T getClientProxy(Class<T> httpServiceType);
 
 	/**
 	 * Return a Map from HttpService types to proxy instances. The returned Map is
-	 * empty before {@link #initProxies()} is called.
-	 * @throws IllegalStateException if {@link #initProxies()} has not been called yet called
+	 * empty before {@link #initClientProxies()} is called.
+	 * @throws IllegalStateException if {@link #initClientProxies()} has not been called yet called
 	 */
 	Map<Class<?>, Object> getClientProxyMap();
 

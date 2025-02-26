@@ -16,29 +16,19 @@
 
 package org.springframework.web.service.registry;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.core.type.filter.AssignableTypeFilter;
-import org.springframework.core.type.filter.RegexPatternTypeFilter;
-import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.invoker.HttpExchangeAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
@@ -135,7 +125,7 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 	}
 
 	@Override
-	public void initProxies() {
+	public void initClientProxies() {
 		if (this.proxyMap != null) {
 			return;
 		}
@@ -157,8 +147,8 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> @Nullable T getClientProxy(Class<T> proxyType) {
-		return (T) getClientProxyMap().get(proxyType);
+	public <T> @Nullable T getClientProxy(Class<T> httpServiceType) {
+		return (T) getClientProxyMap().get(httpServiceType);
 	}
 
 	@Override

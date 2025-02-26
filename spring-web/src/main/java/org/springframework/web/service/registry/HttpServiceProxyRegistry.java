@@ -36,22 +36,22 @@ public interface HttpServiceProxyRegistry<G extends HttpServiceGroup<G, ?>> {
 	/**
 	 * Return a client proxy of the given type from any HTTP Service group as
 	 * long as there is only one proxy of the given type across all groups.
-	 * @param proxyType the proxy type to return
+	 * @param httpServiceType the type of HTTP Service to return
 	 * @return the proxy instance or {@code null} if not found
 	 * @param <P> the proxy type
 	 * @throws IllegalArgumentException if there is more than one proxy of
 	 * the given type
 	 */
-	<P> @Nullable P getClientProxy(Class<P> proxyType);
+	<P> @Nullable P getClientProxy(Class<P> httpServiceType);
 
 	/**
 	 * Return a client proxy from the identified HTTP Service group.
 	 * @param groupId identifier of the group
-	 * @param proxyType the proxy type to return
+	 * @param httpServiceType the type of HTTP Service to return
 	 * @return the proxy instance or {@code null} if not found
 	 * @param <P> the proxy type
 	 */
-	<P> @Nullable P getClientProxy(String groupId, Class<P> proxyType);
+	<P> @Nullable P getClientProxy(String groupId, Class<P> httpServiceType);
 
 	/**
 	 * Get all registered HTTP Service groups.
