@@ -28,6 +28,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.MethodMetadata;
+import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.web.service.annotation.HttpExchange;
 
 /**
  * Base class for {@link HttpServiceProxyRegistry} implementations.
@@ -103,6 +107,7 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 			this.componentProvider = new HttpServiceClassPathScanningCandidateComponentProvider();
 			this.componentProvider.setEnvironment(this.environment);
 			this.componentProvider.setResourceLoader(this.resourceLoader);
+			this.componentProvider.addIncludeFilter(new HttpExchangeAnnotationTypeFilter());
 		}
 		return this.componentProvider;
 	}
@@ -132,4 +137,28 @@ public abstract class AbstractHttpServiceProxyRegistry<G extends HttpServiceGrou
 		}
 	}
 
+
+	/**
+	 * {@link org.springframework.core.type.filter.TypeFilter} that looks for
+	 * type or method level {@link HttpExchange} annotations.
+	 */
+	private final static class HttpExchangeAnnotationTypeFilter extends AnnotationTypeFilter {
+
+		public HttpExchangeAnnotationTypeFilter() {
+			super(HttpExchange.class, true, true);
+		}
+
+		@Override
+		protected boolean matchSelf(MetadataReader metadataReader) {
+			if (metadataReader.getClassMetadata().isInterface()) {
+				for (MethodMetadata metadata : metadataReader.getAnnotationMetadata().getDeclaredMethods()) {
+					if (metadata.getAnnotations().isPresent(HttpExchange.class)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+	}
 }

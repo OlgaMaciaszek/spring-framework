@@ -92,13 +92,8 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 	}
 
 	@Override
-	public G detectHttpServiceTypes(Consumer<ScanSpec> scanConfigurer) {
-		DefaultScanSpec scan = new DefaultScanSpec();
-		scanConfigurer.accept(scan);
-		scan.getIncludeFilters().forEach(this.componentProvider::addIncludeFilter);
-		scan.getExcludeFilters().forEach(this.componentProvider::addExcludeFilter);
-
-		for (String basePackage : scan.getBasePackages()) {
+	public G detectHttpServiceTypes(String... basePackages) {
+		for (String basePackage : basePackages) {
 			for (BeanDefinition definition : this.componentProvider.findCandidateComponents(basePackage)) {
 				String className = definition.getBeanClassName();
 				if (className == null) {
@@ -113,8 +108,13 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 				}
 			}
 		}
-
 		return self();
+	}
+
+	@Override
+	public G detectHttpServiceTypes(Class<?>... basePackages) {
+		return detectHttpServiceTypes(
+				Arrays.stream(basePackages).map(Class::getPackageName).toArray(String[]::new));
 	}
 
 	@Override
@@ -167,94 +167,10 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 		return this.proxyMap;
 	}
 
-
-
-	private static class DefaultScanSpec implements ScanSpec {
-
-		private final List<String> basePackages = new ArrayList<>();
-
-		private @Nullable List<Class<?>> assignableTypes;
-
-		private @Nullable List<Class<? extends Annotation>> annotationTypes;
-
-		private @Nullable List<String> expressions;
-
-		private @Nullable List<TypeFilter> excludeFilters;
-
-		@Override
-		public ScanSpec basePackages(String... basePackages) {
-			this.basePackages.addAll(Arrays.asList(basePackages));
-			return this;
-		}
-
-		@Override
-		public ScanSpec basePackages(Class<?>... basePackageClasses) {
-			for (Class<?> type : basePackageClasses) {
-				this.basePackages.add(type.getPackageName());
-			}
-			return this;
-		}
-
-		@Override
-		public ScanSpec assignableTypes(Class<?>... assignableTypes) {
-			this.assignableTypes = (this.assignableTypes != null ? this.assignableTypes : new ArrayList<>());
-			this.assignableTypes.addAll(Arrays.asList(assignableTypes));
-			return this;
-		}
-
-		@Override
-		public ScanSpec annotation(Class<? extends Annotation> annotation) {
-			this.annotationTypes = (this.annotationTypes != null ? this.annotationTypes : new ArrayList<>());
-			this.annotationTypes.add(annotation);
-			return this;
-		}
-
-		@Override
-		public ScanSpec regex(String... expressions) {
-			this.expressions = (this.expressions != null ? this.expressions : new ArrayList<>());
-			this.expressions.addAll(Arrays.asList(expressions));
-			return this;
-		}
-
-		@Override
-		public ScanSpec excludeFilters(TypeFilter... excludeFilters) {
-			this.excludeFilters = (this.excludeFilters != null ? this.excludeFilters : new ArrayList<>());
-			this.excludeFilters.addAll(Arrays.asList(excludeFilters));
-			return this;
-		}
-
-		List<String> getBasePackages() {
-			Assert.notEmpty(this.basePackages, "No basePackage specified for HttpService scan");
-			return this.basePackages;
-		}
-
-		List<TypeFilter> getIncludeFilters() {
-			List<TypeFilter> typeFilters = new ArrayList<>();
-			if (this.assignableTypes != null) {
-				for (Class<?> assignableType : this.assignableTypes) {
-					typeFilters.add(new AssignableTypeFilter(assignableType));
-				}
-			}
-			if (this.annotationTypes != null) {
-				for (Class<? extends Annotation> annotationType : this.annotationTypes) {
-					typeFilters.add(new AnnotationTypeFilter(annotationType));
-				}
-			}
-			if (this.expressions != null) {
-				for (String expression : this.expressions) {
-					typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(expression)));
-				}
-			}
-			if (typeFilters.isEmpty()) {
-				typeFilters.add(new AnnotationTypeFilter(HttpExchange.class));
-			}
-			return typeFilters;
-		}
-
-		List<TypeFilter> getExcludeFilters() {
-			return (this.excludeFilters != null ? this.excludeFilters : Collections.emptyList());
-		}
-
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() +
+				"{id='" + this.id + "', httpServiceTypes=" + this.httpServiceTypes + "}";
 	}
 
 }

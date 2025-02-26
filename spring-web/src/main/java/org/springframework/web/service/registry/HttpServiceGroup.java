@@ -58,14 +58,18 @@ public interface HttpServiceGroup<G extends HttpServiceGroup<G, CB>, CB> {
 	G addHttpServiceTypes(Class<?>... httpServiceTypes);
 
 	/**
-	 * Scan the classpath for HTTP Service types under one or more base packages,
-	 * and with a list of include and exclude filters.
-	 * <p>By default, if no include filters are specified, then a filter is added
-	 * to search for interfaces annotated with
+	 * Scan the classpath for HTTP Services under one or more base packages.
 	 * {@link org.springframework.web.service.annotation.HttpExchange}.
 	 * @see org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
 	 */
-	G detectHttpServiceTypes(Consumer<ScanSpec> scanConfigurer);
+	G detectHttpServiceTypes(String... basePackages);
+
+	/**
+	 * Scan the classpath for HTTP Services under one or more base packages.
+	 * {@link org.springframework.web.service.annotation.HttpExchange}.
+	 * @see org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
+	 */
+	G detectHttpServiceTypes(Class<?>... basePackages);
 
 	/**
 	 * Callback to configure the underlying HTTP client.
@@ -96,46 +100,5 @@ public interface HttpServiceGroup<G extends HttpServiceGroup<G, CB>, CB> {
 	 * @throws IllegalStateException if {@link #initProxies()} has not been called yet called
 	 */
 	Map<Class<?>, Object> getClientProxyMap();
-
-
-	/**
-	 * Spec to specify HTTP service scan options.
-	 */
-	interface ScanSpec {
-
-		/**
-		 * Add base packages to scan.
-		 */
-		ScanSpec basePackages(String... basePackages);
-
-		/**
-		 * Add base packages through references to classes in those packages.
-		 */
-		ScanSpec basePackages(Class<?>... basePackageClasses);
-
-		/**
-		 * Match HTTP Service types that are assignable to a given type.
-		 * @see org.springframework.core.type.filter.AssignableTypeFilter
-		 */
-		ScanSpec assignableTypes(Class<?>... assignableTypes);
-
-		/**
-		 * Match HTTP Service types that have a given annotation, checking inherited
-		 * annotations as well.
-		 * @see org.springframework.core.type.filter.AnnotationTypeFilter
-		 */
-		ScanSpec annotation(Class<? extends Annotation> annotation);
-
-		/**
-		 * Match HTTP Services types with a regex for fully-qualified class names.
-		 * @see org.springframework.core.type.filter.RegexPatternTypeFilter
-		 */
-		ScanSpec regex(String... expressions);
-
-		/**
-		 * Add filters for types that should not be matched.
-		 */
-		ScanSpec excludeFilters(TypeFilter... typeFilters);
-	}
 
 }
