@@ -49,7 +49,8 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 
 	private final ClassPathScanningCandidateComponentProvider componentProvider;
 
-	private Consumer<HttpServiceProxyFactory.Builder> proxyFactoryConfigurer = builder -> {};
+	private Consumer<HttpServiceProxyFactory.Builder> proxyFactoryConfigurer = builder -> {
+	};
 
 	private final Set<Class<?>> httpServiceTypes = new LinkedHashSet<>();
 
@@ -104,7 +105,8 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 	@Override
 	public G detectHttpServiceTypes(Class<?>... basePackages) {
 		return detectHttpServiceTypes(
-				Arrays.stream(basePackages).map(Class::getPackageName).toArray(String[]::new));
+				Arrays.stream(basePackages).map(Class::getPackageName)
+						.toArray(String[]::new));
 	}
 
 	@Override
@@ -153,6 +155,10 @@ public abstract class AbstractHttpServiceGroup<G extends AbstractHttpServiceGrou
 
 	@Override
 	public Map<Class<?>, Object> getClientProxyMap() {
+		// FIXME
+		if (this.proxyMap == null) {
+			initClientProxies();
+		}
 		Assert.state(this.proxyMap != null, "Proxies not initialized yet");
 		return this.proxyMap;
 	}
